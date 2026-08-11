@@ -184,7 +184,6 @@
         .chart-container { position: relative; height: 220px; width: 100%; margin-top: 15px;}
         .empty-state { text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 1rem;}
 
-        /* עיצוב לפאנל היעדים החכמים */
         .smart-goals-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px;}
         .smart-goal-card {
             background: rgba(15, 23, 42, 0.6);
@@ -231,7 +230,6 @@
             <button class="export-btn" onclick="exportToCSV()">
                 <i class="fas fa-file-excel"></i> ייצוא
             </button>
-            <!-- כפתור ההתנתקות החדש שהוספנו: -->
             <a href="/logout" class="export-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); text-decoration: none;">
                 <i class="fas fa-sign-out-alt"></i> התנתק
             </a>
@@ -242,7 +240,8 @@
         <div class="card main-card">
             <i class="fas fa-wallet" style="color: #60a5fa;"></i>
             <h3>עו"ש</h3>
-            <p id="balance">₪0</p>
+            <!-- הפכנו את ה-p לניתן לעריכה ישירה בלחיצה עליו -->
+            <p id="balance" contenteditable="true" onblur="updateManualBalance(this.innerText)" title="לחץ לעריכה ישירה של העו"ש" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.4); outline: none;">₪0</p>
         </div>
         <div class="card savings-card">
             <i class="fas fa-vault" style="color: #a78bfa;"></i>
@@ -282,9 +281,7 @@
             </form>
         </div>
 
-        <div class="smart-goals-container" id="goals-container">
-            <!-- Smart goals will be injected here -->
-        </div>
+        <div class="smart-goals-container" id="goals-container"></div>
     </div>
 
     <div class="main-content">
@@ -342,8 +339,9 @@
 <script>
     const API_URL = '/api/transactions';
     const GOALS_API_URL = '/api/goals';
+    const ACCOUNT_API_URL = '/api/account';
 
-    const balance = document.getElementById('balance');
+    const balanceUI = document.getElementById('balance');
     const savingsTotalUI = document.getElementById('savings-total');
     const income = document.getElementById('income');
     const expense = document.getElementById('expense');
@@ -374,7 +372,41 @@
             handleTypeChange();
             populateMonthsDropdown();
             renderUI();
+            fetchBalance();
         } catch (error) { console.error("Error fetching data:", error); }
+    }
+
+    async function fetchBalance() {
+        try {
+            const res = await fetch(ACCOUNT_API_URL);
+            if(res.ok) {
+                const acc = await res.json();
+                balanceUI.innerText = '₪' + acc.balance.toFixed(2);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function updateManualBalance(textValue) {
+        // מנקה את הסימן ₪ או רווחים מיותרים כדי לקבל מספר נקי
+        const cleanVal = textValue.replace(/[₪,\s]/g, '');
+        const newBalance = parseFloat(cleanVal);
+
+        if(isNaN(newBalance)) {
+            alert("נא להזין מספר תקין");
+            fetchBalance();
+            return;
+        }
+
+        try {
+            const res = await fetch(ACCOUNT_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newBalance)
+            });
+            if(res.ok) {
+                fetchBalance(); // מרענן את התצוגה אחרי החישוב בשרת
+            }
+        } catch (e) { console.error(e); }
     }
 
     async function addSmartGoal(e) {
@@ -404,7 +436,7 @@
     }
 
     async function deleteSmartGoal(id) {
-        if(!confirm("האם למחוק יעד זה? הכספים שכבר חסכת יישארו בהיסטוריה, אך היעד יימחק.")) return;
+        if(!confirm("האם למחוק יעד זה?")) return;
         try {
             const res = await fetch(`${GOALS_API_URL}/${id}`, { method: 'DELETE' });
             if(res.ok) {
@@ -424,20 +456,20 @@
             }
         } else if (type.value === 'income') {
             category.innerHTML = `
-                    <option value="💰 משכורת">💰 משכורת</option>
-                    <option value="🛵 משלוחים / טיפים">🛵 משלוחים / טיפים</option>
-                    <option value="שונות">שונות</option>
-                `;
+                <option value="💰 משכורת">💰 משכורת</option>
+                <option value="🛵 משלוחים / טיפים">🛵 משלוחים / טיפים</option>
+                <option value="שונות">שונות</option>
+            `;
         } else {
             category.innerHTML = `
-                    <option value="🎓 לימודים">🎓 לימודים</option>
-                    <option value="🏍️ רכב / אופנוע">🏍️ רכב / אופנוע</option>
-                    <option value="🛒 סופר">🛒 סופר</option>
-                    <option value="🍔 מסעדות ואוכל">🍔 מסעדות ואוכל</option>
-                    <option value="🎮 פנאי וגיימינג">🎮 פנאי וגיימינג</option>
-                    <option value="📱 חשבונות">📱 חשבונות</option>
-                    <option value="💡 שונות">💡 שונות</option>
-                `;
+                <option value="🎓 לימודים">🎓 לימודים</option>
+                <option value="🏍️ רכב / אופנוע">🏍️ רכב / אופנוע</option>
+                <option value="🛒 סופר">🛒 סופר</option>
+                <option value="🍔 מסעדות ואוכל">🍔 מסעדות ואוכל</option>
+                <option value="🎮 פנאי וגיימינג">🎮 פנאי וגיימינג</option>
+                <option value="📱 חשבונות">📱 חשבונות</option>
+                <option value="💡 שונות">💡 שונות</option>
+            `;
         }
     }
 
@@ -469,6 +501,7 @@
                 amount.value = '';
                 populateMonthsDropdown();
                 renderUI();
+                fetchBalance(); // מעדכן גם את העו"ש בשרת
             }
         } catch (error) { console.error(error); }
     }
@@ -480,6 +513,7 @@
                 transactions = transactions.filter(t => t.id !== id);
                 populateMonthsDropdown();
                 renderUI();
+                fetchBalance(); // מעדכן את העו"ש אחרי מחיקה
             }
         } catch (error) { console.error(error); }
     }
@@ -538,14 +572,12 @@
         const savingsTxs = transactions.filter(t => t.type === 'savings');
 
         smartGoals.forEach(goal => {
-            // כמה כסף נחסך ליעד הזה ספציפית
             const savedAmount = savingsTxs
                 .filter(t => t.category === goal.name)
                 .reduce((acc, t) => acc + t.amount, 0);
 
             const percentage = Math.min(100, (savedAmount / goal.targetAmount) * 100);
 
-            // חישוב חודשים נותרים
             const today = new Date();
             const targetDate = new Date(goal.targetMonth + "-01");
             let monthsLeft = (targetDate.getFullYear() - today.getFullYear()) * 12 + targetDate.getMonth() - today.getMonth();
@@ -562,33 +594,27 @@
                 recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ₪${monthlyRequired.toFixed(0)}`;
             }
 
-            // פורמט תאריך נחמד להצגה
             const displayMonth = targetDate.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
 
             const card = document.createElement('div');
             card.className = 'smart-goal-card';
             card.innerHTML = `
-                    <div class="goal-header">
-                        <div>
-                            <div class="goal-title">${goal.name}</div>
-                            <div class="goal-target-date">יעד: ${displayMonth}</div>
-                        </div>
-                        <button class="delete-btn" onclick="deleteSmartGoal(${goal.id})"><i class="fas fa-times"></i></button>
+                <div class="goal-header">
+                    <div>
+                        <div class="goal-title">${goal.name}</div>
+                        <div class="goal-target-date">יעד: ${displayMonth}</div>
                     </div>
-
-                    <div class="goal-stats">
-                        <span class="goal-saved">₪${savedAmount.toFixed(0)}</span>
-                        <span class="goal-target">מתוך ₪${goal.targetAmount.toFixed(0)}</span>
-                    </div>
-
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: ${percentage}%"></div>
-                    </div>
-
-                    <div class="monthly-recommendation">
-                        ${recommendationText}
-                    </div>
-                `;
+                    <button class="delete-btn" onclick="deleteSmartGoal(${goal.id})"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="goal-stats">
+                    <span class="goal-saved">₪${savedAmount.toFixed(0)}</span>
+                    <span class="goal-target">מתוך ₪${goal.targetAmount.toFixed(0)}</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                </div>
+                <div class="monthly-recommendation">${recommendationText}</div>
+            `;
             container.appendChild(card);
         });
     }
@@ -599,16 +625,16 @@
         const item = document.createElement('li');
         item.classList.add(transaction.type);
         item.innerHTML = `
-                <div class="details">
-                    <span class="date">${displayDate}</span>
-                    <strong>${transaction.text}</strong>
-                    <span class="category">${transaction.category}</span>
-                </div>
-                <div class="amount-controls">
-                    <span>${sign}₪${transaction.amount.toFixed(2)}</span>
-                    <button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            `;
+            <div class="details">
+                <span class="date">${displayDate}</span>
+                <strong>${transaction.text}</strong>
+                <span class="category">${transaction.category}</span>
+            </div>
+            <div class="amount-controls">
+                <span>${sign}₪${transaction.amount.toFixed(2)}</span>
+                <button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        `;
         list.appendChild(item);
     }
 
@@ -617,10 +643,12 @@
         const expenseTotal = filteredData.filter(item => item.type === 'expense').reduce((acc, item) => (acc += item.amount), 0);
         const savingsTotal = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => (acc += item.amount), 0);
 
-        balance.innerText = '₪' + (incomeTotal - expenseTotal - savingsTotal).toFixed(2);
         savingsTotalUI.innerText = '₪' + savingsTotal.toFixed(2);
         income.innerText = '₪' + incomeTotal.toFixed(2);
         expense.innerText = '₪' + expenseTotal.toFixed(2);
+
+        // טעינה ועדכון של העו"ש מהשרת
+        fetchBalance();
     }
 
     function updateChart(filteredData) {
@@ -672,7 +700,6 @@
     goalForm.addEventListener('submit', addSmartGoal);
     form.addEventListener('submit', addTransaction);
 
-    // טעינת הנתונים מהשרת בעליית העמוד
     fetchData();
 </script>
 </body>

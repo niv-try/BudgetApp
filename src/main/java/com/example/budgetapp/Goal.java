@@ -14,6 +14,7 @@ public class Goal {
     private String name;
     private double targetAmount;
     private String targetMonth; // פורמט: "2026-09"
+    private String ownerUsername;
 
     public Goal() {}
 
@@ -21,9 +22,19 @@ public class Goal {
         this.name = name;
         this.targetAmount = targetAmount;
         this.targetMonth = targetMonth;
+        this.ownerUsername = "";
     }
 
     // Getters & Setters
+
+    public String getOwnerUsername() {
+        return ownerUsername;
+    }
+
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }

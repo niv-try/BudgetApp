@@ -17,6 +17,7 @@ public class Transaction {
     private String text;
     private double amount;
     private LocalDateTime date;
+    private String ownerUsername;
 
     // בנאי ריק (חובה עבור Spring Boot / JPA)
     public Transaction() {
@@ -29,6 +30,15 @@ public class Transaction {
         this.text = text;
         this.amount = amount;
         this.date = date;
+        this.ownerUsername = "";
+    }
+
+    public String getOwnerUsername() {
+        return ownerUsername;
+    }
+
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
     }
 
     // Getters and Setters

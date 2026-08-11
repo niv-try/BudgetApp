@@ -1,25 +1,30 @@
 package com.example.budgetapp;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
-@CrossOrigin(origins = "*") // חשוב: מאפשר לקובץ ה-HTML שלנו לגשת לשרת ללא חסימות אבטחה
+@CrossOrigin(origins = "*")
 public class TransactionController {
 
     @Autowired
     private TransactionRepository repository;
 
-    // שליפת כל הפעולות
+    // שליפת כל הפעולות של המשתמש המחובר בלבד
     @GetMapping
     public List<Transaction> getAllTransactions() {
-        return repository.findAll();
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return repository.findByOwnerUsername(currentUsername);
     }
 
-    // הוספת פעולה חדשה
+    // הוספת פעולה חדשה ושיוך שלה למשתמש המחובר
     @PostMapping
     public Transaction addTransaction(@RequestBody Transaction transaction) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        transaction.setOwnerUsername(currentUsername);
         return repository.save(transaction);
     }
 

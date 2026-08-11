@@ -31,11 +31,16 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         // כאן אנחנו מגדירים את פרטי ההתחברות שלך
-        UserDetails user = User.builder()
+        UserDetails nivegozUser = User.builder()
                 .username("nivegoz") // שם המשתמש
                 .password("{noop}1234") // הסיסמה. התגית {noop} אומרת לשרת לא להצפין אותה כרגע
                 .roles("USER")
                 .build();
-        return new InMemoryUserDetailsManager(user);
+         UserDetails liorUser = User.builder()
+                .username("lior") // שם המשתמש
+                .password("{noop}4321") // הסיסמה. התגית {noop} אומרת לשרת לא להצפין אותה כרגע
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(nivegozUser, liorUser);
     }
 }

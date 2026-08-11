@@ -41,6 +41,11 @@ public class SecurityConfig {
                 .password("{noop}4321") // הסיסמה. התגית {noop} אומרת לשרת לא להצפין אותה כרגע
                 .roles("USER")
                 .build();
-        return new InMemoryUserDetailsManager(nivegozUser, liorUser);
+        UserDetails leaUser = User.builder()
+                .username("leaal") // שם המשתמש
+                .password("{noop}5656") // הסיסמה. התגית {noop} אומרת לשרת לא להצפין אותה כרגע
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(nivegozUser, liorUser, leaUser);
     }
 }

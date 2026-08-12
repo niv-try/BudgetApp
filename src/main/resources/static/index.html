@@ -302,7 +302,6 @@
         <h1>ניהול תקציב חכם</h1>
         <p class="credit">פותח ע"י ניב אגוז</p>
         <div class="top-controls">
-            <!-- אזור בחירת המטבע החדש -->
             <div class="control-box">
                 <i class="fas fa-coins"></i>
                 <select id="currency-selector" onchange="changeCurrency()">
@@ -428,6 +427,18 @@
     const GOALS_API_URL = '/api/goals';
     const ACCOUNT_API_URL = '/api/account';
 
+    // הגדרת מערכת הסאונדים עם קבצי אודיו חיצוניים
+    const incomeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+    const expenseSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+    const savingsSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
+    const goalSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3');
+
+    // הנמכת ווליום כדי שיהיה נעים לאוזן
+    incomeSound.volume = 0.5;
+    expenseSound.volume = 0.4;
+    savingsSound.volume = 0.5;
+    goalSound.volume = 0.6;
+
     const balanceUI = document.getElementById('balance');
     const savingsTotalUI = document.getElementById('savings-total');
     const income = document.getElementById('income');
@@ -446,11 +457,9 @@
     let transactions = [];
     let smartGoals = [];
 
-    // הגדרות מטבע גלובליות שנשמרות בדפדפן
     let currentCurrency = localStorage.getItem('budgetAppCurrency') || 'ILS';
     let currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
 
-    // פונקציה להחלפת המטבע
     function changeCurrency() {
         currentCurrency = document.getElementById('currency-selector').value;
         currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
@@ -481,7 +490,6 @@
     }
 
     async function fetchData() {
-        // בחירת הערך הנכון בתפריט עם טעינת הדף
         document.getElementById('currency-selector').value = currentCurrency;
 
         try {
@@ -554,6 +562,9 @@
                 body: JSON.stringify(goal)
             });
             if(res.ok) {
+                // מנגן את צליל היעד החדש בהצלחה
+                goalSound.play().catch(e => console.log("Audio blocked by browser auto-play policy"));
+
                 const savedGoal = await res.json();
                 smartGoals.push(savedGoal);
                 document.getElementById('goal-name').value = '';
@@ -625,6 +636,15 @@
                 body: JSON.stringify(transaction)
             });
             if(response.ok) {
+                // מנגן את הסאונד המתאים לפי סוג הפעולה שבוצעה
+                if (transaction.type === 'income') {
+                    incomeSound.play().catch(e => {});
+                } else if (transaction.type === 'expense') {
+                    expenseSound.play().catch(e => {});
+                } else if (transaction.type === 'savings') {
+                    savingsSound.play().catch(e => {});
+                }
+
                 const savedTx = await response.json();
                 transactions.push(savedTx);
                 text.value = '';

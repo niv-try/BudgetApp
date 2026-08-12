@@ -16,12 +16,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // מאפשר לאתר שלנו לשלוח נתונים לשרת בלי להיחסם
+                .csrf(csrf -> csrf.disable()) // ביטול הגנת CSRF (נפוץ בפרויקטים כאלה כדי לאפשר שליחת טפסים בקלות)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated() // דורש התחברות עבור כל כניסה לאתר
+                        .requestMatchers("/login.html", "/css/**", "/js/**", "/images/**").permitAll() // מאפשר לכולם לגשת למסך ההתחברות ולעיצוב
+                        .anyRequest().authenticated() // חוסם את שאר האתר ודורש התחברות
                 )
                 .formLogin(form -> form
-                        .defaultSuccessUrl("/index.html", true) // לאן להעביר אותך אחרי התחברות מוצלחת
+                        .loginPage("/login.html") // אומר ל-Spring: "זה המסך המעוצב שיצרתי, תשתמש בו!"
+                        .loginProcessingUrl("/login") // הכתובת שהטופס שלנו ב-HTML שולח אליה את השם והסיסמה
+                        .defaultSuccessUrl("/index.html", true) // אם ההתחברות הצליחה -> קפוץ לדשבורד
+                        .failureUrl("/login.html?error=true") // אם יש שגיאה -> חזור למסך ההתחברות עם הודעת שגיאה
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login.html") // כשמתנתקים, חוזרים למסך ההתחברות היפה
                         .permitAll()
                 );
 

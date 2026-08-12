@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול תקציב חכם</title>
+    <title>ניהול תקציב חכם | ניב אגוז</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -28,12 +28,19 @@
             padding: 20px 10px;
             color: var(--text-main);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container { max-width: 1050px; margin: 0 auto; }
 
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { margin: 0; font-size: 2.2rem; color: #ffffff; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header { text-align: center; margin-bottom: 30px; animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .header h1 { margin: 0; font-size: 2.2rem; color: #ffffff; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); letter-spacing: -0.5px;}
+        .credit { color: var(--text-muted); font-size: 1.1rem; margin-top: 5px; margin-bottom: 0; font-weight: 600; }
 
         .top-controls { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap;}
         .control-box {
@@ -46,7 +53,9 @@
             gap: 10px;
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
+        .control-box:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
         .control-box i { color: var(--text-muted); font-size: 1rem; }
         .control-box select {
             border: none;
@@ -56,6 +65,7 @@
             font-weight: 600;
             color: var(--text-main);
             outline: none;
+            cursor: pointer;
         }
         select option { background: #1e293b; color: #f8fafc; }
 
@@ -71,7 +81,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s ease;
         }
+        .export-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5);
+            filter: brightness(1.1);
+        }
+        .export-btn:active { transform: translateY(1px) scale(0.98); }
 
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .card {
@@ -82,8 +99,27 @@
             box-shadow: var(--glass-shadow);
             text-align: center;
             border: 1px solid var(--glass-border);
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
-        .card i { font-size: 1.8rem; margin-bottom: 10px; opacity: 0.9; }
+
+        .dashboard .card:nth-child(1) { animation-delay: 0.1s; }
+        .dashboard .card:nth-child(2) { animation-delay: 0.2s; }
+        .dashboard .card:nth-child(3) { animation-delay: 0.3s; }
+        .dashboard .card:nth-child(4) { animation-delay: 0.4s; }
+
+        .card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(255,255,255,0.3); }
+        .card.main-card:hover { box-shadow: 0 15px 30px rgba(30, 64, 175, 0.4), inset 0 0 20px rgba(255,255,255,0.05); }
+        .card.savings-card:hover { box-shadow: 0 15px 30px rgba(67, 56, 202, 0.4), inset 0 0 20px rgba(255,255,255,0.05); }
+        .card:nth-child(3):hover { box-shadow: 0 15px 30px rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); }
+        .card:nth-child(4):hover { box-shadow: 0 15px 30px rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
+
+        .card i { font-size: 1.8rem; margin-bottom: 10px; opacity: 0.9; transition: transform 0.3s ease; }
+        .card:hover i { transform: scale(1.15) rotate(5deg); }
+
         .card.main-card { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; }
         .card.savings-card { background: linear-gradient(135deg, #312e81 0%, #4338ca 100%); color: white; }
         .card h3 { margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 600; color: var(--text-muted);}
@@ -106,9 +142,12 @@
             border-radius: 20px;
             box-shadow: var(--glass-shadow);
             border: 1px solid var(--glass-border);
+            opacity: 0;
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.3s;
         }
         .panel h2 { margin-top: 0; font-size: 1.2rem; color: var(--text-main); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
-        .panel h2 i { color: var(--accent-blue); }
+        .panel h2 i { color: var(--accent-blue); text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 
         .form-row { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
         .form-group { flex: 1; min-width: 140px; }
@@ -124,8 +163,15 @@
             font-family: inherit;
             font-size: 1rem;
             color: var(--text-main);
+            transition: all 0.3s ease;
         }
-        input:focus, select:focus { outline: none; border-color: var(--accent-blue); background: rgba(15, 23, 42, 0.9); }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
 
         button.submit-btn {
             width: 100%;
@@ -138,13 +184,28 @@
             font-weight: 800;
             cursor: pointer;
             margin-top: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
         }
+        button.submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            filter: brightness(1.1);
+        }
+        button.submit-btn:active { transform: translateY(1px) scale(0.98); }
 
         .search-bar-wrapper { position: relative; margin-bottom: 15px; }
-        .search-bar-wrapper i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        .search-bar { width: 100%; padding: 12px 14px 12px 40px; }
+        .search-bar-wrapper i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); transition: color 0.3s; }
+        .search-bar-wrapper:focus-within i { color: var(--accent-blue); }
+        .search-bar { width: 100%; padding: 12px 40px 12px 14px; }
 
-        .list { list-style: none; padding: 0; margin: 0; max-height: 350px; overflow-y: auto;}
+        .list { list-style: none; padding: 0; margin: 0; max-height: 350px; overflow-y: auto; scroll-behavior: smooth;}
+
+        .list::-webkit-scrollbar { width: 6px; }
+        .list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
         .list li {
             background: rgba(15, 23, 42, 0.5);
             border: 1px solid rgba(255,255,255,0.05);
@@ -155,10 +216,14 @@
             justify-content: space-between;
             border-radius: 10px;
             align-items: center;
+            transition: all 0.3s ease;
+            animation: fadeUp 0.4s ease-out forwards;
         }
-        .list li.income { border-right-color: var(--accent-green); }
-        .list li.expense { border-right-color: var(--accent-red); }
-        .list li.savings { border-right-color: #8b5cf6; }
+        .list li:hover { transform: translateX(-5px); background: rgba(30, 41, 59, 0.8); border-color: rgba(255,255,255,0.1); }
+
+        .list li.income { border-right-color: #34d399; }
+        .list li.expense { border-right-color: #f87171; }
+        .list li.savings { border-right-color: #a78bfa; }
 
         .details { display: flex; flex-direction: column; gap: 3px; }
         .details strong { font-size: 1rem; color: var(--text-main); }
@@ -167,19 +232,21 @@
 
         .amount-controls { display: flex; align-items: center; gap: 10px; }
         .amount-controls span { font-weight: 800; font-size: 1.05rem; }
-        .list li.income .amount-controls span { color: var(--accent-green); }
-        .list li.expense .amount-controls span { color: #fca5a5; }
-        .list li.savings .amount-controls span { color: #c4b5fd; }
+        .list li.income .amount-controls span { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
+        .list li.expense .amount-controls span { color: #f87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.2); }
+        .list li.savings .amount-controls span { color: #a78bfa; text-shadow: 0 0 10px rgba(167, 139, 250, 0.2); }
 
         .delete-btn {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.1);
             color: #fca5a5;
             border: none;
             width: 28px; height: 28px;
             border-radius: 6px;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
         }
+        .delete-btn:hover { background: rgba(239, 68, 68, 0.3); color: #fff; transform: scale(1.1); }
 
         .chart-container { position: relative; height: 220px; width: 100%; margin-top: 15px;}
         .empty-state { text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 1rem;}
@@ -191,13 +258,24 @@
             padding: 20px;
             border-radius: 16px;
             position: relative;
+            transition: all 0.3s ease;
+            animation: fadeUp 0.5s ease forwards;
         }
+        .smart-goal-card:hover { transform: translateY(-5px); border-color: rgba(139, 92, 246, 0.3); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15); }
+
         .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .goal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
         .goal-target-date { font-size: 0.85rem; color: var(--text-muted); margin-top: 3px; }
 
         .progress-bar-bg { background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; margin-bottom: 10px; overflow: hidden;}
-        .progress-bar-fill { background: linear-gradient(90deg, #8b5cf6, #3b82f6); height: 100%; border-radius: 5px; transition: width 0.5s ease;}
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #a78bfa, #3b82f6);
+            height: 100%;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
 
         .goal-stats { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 10px;}
         .goal-saved { color: var(--text-main); font-weight: 700;}
@@ -222,7 +300,17 @@
 <div class="container">
     <div class="header">
         <h1>ניהול תקציב חכם</h1>
+        <p class="credit">פותח ע"י ניב אגוז</p>
         <div class="top-controls">
+            <!-- אזור בחירת המטבע החדש -->
+            <div class="control-box">
+                <i class="fas fa-coins"></i>
+                <select id="currency-selector" onchange="changeCurrency()">
+                    <option value="ILS">₪ שקלים</option>
+                    <option value="USD">$ דולרים</option>
+                </select>
+            </div>
+
             <div class="control-box">
                 <i class="fas fa-calendar-alt"></i>
                 <select id="month-filter" onchange="renderUI()"></select>
@@ -238,24 +326,24 @@
 
     <div class="dashboard">
         <div class="card main-card">
-            <i class="fas fa-wallet" style="color: #60a5fa;"></i>
+            <i class="fas fa-wallet" style="color: #93c5fd;"></i>
             <h3>עו"ש</h3>
-            <p id="balance" contenteditable="true" onblur="updateManualBalance(this.innerText)" title="לחץ לעריכה ישירה של העו&quot;ש" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.4); outline: none;">₪0</p>
+            <p id="balance" contenteditable="true" onblur="updateManualBalance(this.innerText)" title="לחץ לעריכה ישירה של העו&quot;ש" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.4); outline: none;">0</p>
         </div>
         <div class="card savings-card">
-            <i class="fas fa-vault" style="color: #a78bfa;"></i>
+            <i class="fas fa-vault" style="color: #c4b5fd;"></i>
             <h3>סך חיסכון</h3>
-            <p id="savings-total">₪0</p>
+            <p id="savings-total" data-val="0">0</p>
         </div>
         <div class="card">
-            <i class="fas fa-arrow-trend-up income-icon"></i>
+            <i class="fas fa-arrow-trend-up income-icon" style="color: #34d399;"></i>
             <h3>הכנסות</h3>
-            <p id="income" style="color: #34d399;">₪0</p>
+            <p id="income" style="color: #34d399;" data-val="0">0</p>
         </div>
         <div class="card">
-            <i class="fas fa-arrow-trend-down expense-icon"></i>
+            <i class="fas fa-arrow-trend-down expense-icon" style="color: #f87171;"></i>
             <h3>הוצאות</h3>
-            <p id="expense" style="color: #f87171;">₪0</p>
+            <p id="expense" style="color: #f87171;" data-val="0">0</p>
         </div>
     </div>
 
@@ -269,13 +357,13 @@
                     <input type="text" id="goal-name" placeholder="לדוגמה: רישיון ואופנוע A1, או חופשה בספטמבר..." required>
                 </div>
                 <div class="form-group">
-                    <input type="number" id="goal-amount" placeholder="סכום יעד (₪)" required min="1">
+                    <input type="number" id="goal-amount" placeholder="סכום יעד" required min="1">
                 </div>
                 <div class="form-group">
                     <input type="month" id="goal-date" required>
                 </div>
                 <div class="form-group" style="min-width: 100px;">
-                    <button type="submit" class="submit-btn" style="margin-top: 0; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);"><i class="fas fa-plus"></i></button>
+                    <button type="submit" class="submit-btn" style="margin-top: 0; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);"><i class="fas fa-plus"></i></button>
                 </div>
             </form>
         </div>
@@ -308,7 +396,7 @@
                             <input type="text" id="text" placeholder="פירוט..." required>
                         </div>
                         <div class="form-group">
-                            <label for="amount">סכום (₪)</label>
+                            <label for="amount">סכום</label>
                             <input type="number" id="amount" placeholder="0" required min="1" step="0.01">
                         </div>
                     </div>
@@ -358,7 +446,44 @@
     let transactions = [];
     let smartGoals = [];
 
+    // הגדרות מטבע גלובליות שנשמרות בדפדפן
+    let currentCurrency = localStorage.getItem('budgetAppCurrency') || 'ILS';
+    let currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
+
+    // פונקציה להחלפת המטבע
+    function changeCurrency() {
+        currentCurrency = document.getElementById('currency-selector').value;
+        currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
+        localStorage.setItem('budgetAppCurrency', currentCurrency);
+
+        renderUI();
+        fetchBalance();
+    }
+
+    function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            const current = progress * (end - start) + start;
+
+            obj.innerText = currencySymbol + current.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                obj.innerText = currencySymbol + end.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
     async function fetchData() {
+        // בחירת הערך הנכון בתפריט עם טעינת הדף
+        document.getElementById('currency-selector').value = currentCurrency;
+
         try {
             const [txRes, goalsRes] = await Promise.all([
                 fetch(API_URL),
@@ -371,35 +496,28 @@
             handleTypeChange();
             populateMonthsDropdown();
             renderUI();
-            fetchBalance();
+            fetchBalance(true);
         } catch (error) { console.error("Error fetching data:", error); }
     }
 
-    async function fetchBalance() {
+    async function fetchBalance(animate = false) {
         try {
             const res = await fetch(ACCOUNT_API_URL);
             if(res.ok) {
                 const acc = await res.json();
                 let bal = acc.balance;
 
-                // מפרידים את סימן המינוס אם קיים
                 let sign = bal < 0 ? '-' : '';
-
-                // משנים את הכיוון של העו"ש ספציפית למשמאל לימין כדי שהמינוס יופיע בצד הנכון
                 balanceUI.style.direction = 'ltr';
                 balanceUI.style.display = 'inline-block';
 
-                // מרכיבים את המספר מחדש עם הערך המוחלט
-                balanceUI.innerText = sign + '₪' + Math.abs(bal).toFixed(2);
+                balanceUI.innerText = sign + currencySymbol + Math.abs(bal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             }
         } catch (e) { console.error(e); }
     }
 
     async function updateManualBalance(textValue) {
-        // בודקים אם הוקלד מינוס איפשהו בטקסט (מגן על הקוד למקרה שהמינוס קפץ לסוף)
         let isNegative = textValue.includes('-');
-
-        // מנקים מהטקסט הכל חוץ ממספרים ונקודה עשרונית
         let cleanVal = textValue.replace(/[^0-9.]/g, '');
         let newBalance = parseFloat(cleanVal);
 
@@ -409,10 +527,7 @@
             return;
         }
 
-        // אם היה מינוס, אנחנו דואגים להחזיר את המספר למצב שלילי לפני השליחה
-        if(isNegative) {
-            newBalance = newBalance * -1;
-        }
+        if(isNegative) newBalance = newBalance * -1;
 
         try {
             const res = await fetch(ACCOUNT_API_URL, {
@@ -420,9 +535,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newBalance)
             });
-            if(res.ok) {
-                fetchBalance(); // מעדכן חזרה מהשרת
-            }
+            if(res.ok) fetchBalance();
         } catch (e) { console.error(e); }
     }
 
@@ -518,7 +631,7 @@
                 amount.value = '';
                 populateMonthsDropdown();
                 renderUI();
-                fetchBalance(); // מעדכן גם את העו"ש בשרת
+                fetchBalance();
             }
         } catch (error) { console.error(error); }
     }
@@ -530,7 +643,7 @@
                 transactions = transactions.filter(t => t.id !== id);
                 populateMonthsDropdown();
                 renderUI();
-                fetchBalance(); // מעדכן את העו"ש אחרי מחיקה
+                fetchBalance();
             }
         } catch (error) { console.error(error); }
     }
@@ -569,7 +682,7 @@
         if (filteredTransactions.length === 0) {
             list.innerHTML = '<li class="empty-state"><i class="fas fa-inbox"></i>אין תנועות</li>';
         } else {
-            [...filteredTransactions].reverse().forEach(addTransactionDOM);
+            [...filteredTransactions].reverse().forEach((t, index) => addTransactionDOM(t, index));
         }
 
         updateValues(filteredTransactions);
@@ -594,7 +707,6 @@
                 .reduce((acc, t) => acc + t.amount, 0);
 
             const percentage = Math.min(100, (savedAmount / goal.targetAmount) * 100);
-
             const today = new Date();
             const targetDate = new Date(goal.targetMonth + "-01");
             let monthsLeft = (targetDate.getFullYear() - today.getFullYear()) * 12 + targetDate.getMonth() - today.getMonth();
@@ -605,10 +717,10 @@
             if (remainingToSave === 0) {
                 recommendationText = "🎉 היעד הושלם בהצלחה!";
             } else if (monthsLeft <= 0) {
-                recommendationText = `הגעת לתאריך היעד! חסרים ${remainingToSave.toFixed(0)}₪`;
+                recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
             } else {
                 const monthlyRequired = remainingToSave / monthsLeft;
-                recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ₪${monthlyRequired.toFixed(0)}`;
+                recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ${currencySymbol}${monthlyRequired.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
             }
 
             const displayMonth = targetDate.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
@@ -624,23 +736,30 @@
                     <button class="delete-btn" onclick="deleteSmartGoal(${goal.id})"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="goal-stats">
-                    <span class="goal-saved">₪${savedAmount.toFixed(0)}</span>
-                    <span class="goal-target">מתוך ₪${goal.targetAmount.toFixed(0)}</span>
+                    <span class="goal-saved">${currencySymbol}${savedAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
+                    <span class="goal-target">מתוך ${currencySymbol}${goal.targetAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
                 </div>
                 <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                    <div class="progress-bar-fill"></div>
                 </div>
                 <div class="monthly-recommendation">${recommendationText}</div>
             `;
             container.appendChild(card);
+
+            setTimeout(() => {
+                const fill = card.querySelector('.progress-bar-fill');
+                if(fill) fill.style.width = `${percentage}%`;
+            }, 100);
         });
     }
 
-    function addTransactionDOM(transaction) {
+    function addTransactionDOM(transaction, index) {
         let sign = transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : '→';
         const displayDate = new Date(transaction.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const item = document.createElement('li');
         item.classList.add(transaction.type);
+        item.style.animationDelay = `${index * 0.05}s`;
+
         item.innerHTML = `
             <div class="details">
                 <span class="date">${displayDate}</span>
@@ -648,7 +767,7 @@
                 <span class="category">${transaction.category}</span>
             </div>
             <div class="amount-controls">
-                <span>${sign}₪${transaction.amount.toFixed(2)}</span>
+                <span>${sign}${currencySymbol}${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                 <button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button>
             </div>
         `;
@@ -660,11 +779,18 @@
         const expenseTotal = filteredData.filter(item => item.type === 'expense').reduce((acc, item) => (acc += item.amount), 0);
         const savingsTotal = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => (acc += item.amount), 0);
 
-        savingsTotalUI.innerText = '₪' + savingsTotal.toFixed(2);
-        income.innerText = '₪' + incomeTotal.toFixed(2);
-        expense.innerText = '₪' + expenseTotal.toFixed(2);
+        const oldSavings = parseFloat(savingsTotalUI.getAttribute('data-val'));
+        const oldIncome = parseFloat(income.getAttribute('data-val'));
+        const oldExpense = parseFloat(expense.getAttribute('data-val'));
 
-        // טעינה ועדכון של העו"ש מהשרת
+        animateValue(savingsTotalUI, oldSavings, savingsTotal, 1500);
+        animateValue(income, oldIncome, incomeTotal, 1500);
+        animateValue(expense, oldExpense, expenseTotal, 1500);
+
+        savingsTotalUI.setAttribute('data-val', savingsTotal);
+        income.setAttribute('data-val', incomeTotal);
+        expense.setAttribute('data-val', expenseTotal);
+
         fetchBalance();
     }
 
@@ -692,6 +818,7 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
+                animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' },
                 plugins: { legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } } },
                 cutout: '65%'
             }

@@ -240,8 +240,7 @@
         <div class="card main-card">
             <i class="fas fa-wallet" style="color: #60a5fa;"></i>
             <h3>עו"ש</h3>
-            <!-- הפכנו את ה-p לניתן לעריכה ישירה בלחיצה עליו -->
-            <p id="balance" contenteditable="true" onblur="updateManualBalance(this.innerText)" title="לחץ לעריכה ישירה של העו"ש" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.4); outline: none;">₪0</p>
+            <p id="balance" contenteditable="true" onblur="updateManualBalance(this.innerText)" title="לחץ לעריכה ישירה של העו&quot;ש" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.4); outline: none;">₪0</p>
         </div>
         <div class="card savings-card">
             <i class="fas fa-vault" style="color: #a78bfa;"></i>
@@ -381,20 +380,38 @@
             const res = await fetch(ACCOUNT_API_URL);
             if(res.ok) {
                 const acc = await res.json();
-                balanceUI.innerText = '₪' + acc.balance.toFixed(2);
+                let bal = acc.balance;
+
+                // מפרידים את סימן המינוס אם קיים
+                let sign = bal < 0 ? '-' : '';
+
+                // משנים את הכיוון של העו"ש ספציפית למשמאל לימין כדי שהמינוס יופיע בצד הנכון
+                balanceUI.style.direction = 'ltr';
+                balanceUI.style.display = 'inline-block';
+
+                // מרכיבים את המספר מחדש עם הערך המוחלט
+                balanceUI.innerText = sign + '₪' + Math.abs(bal).toFixed(2);
             }
         } catch (e) { console.error(e); }
     }
 
     async function updateManualBalance(textValue) {
-        // מנקה את הסימן ₪ או רווחים מיותרים כדי לקבל מספר נקי
-        const cleanVal = textValue.replace(/[₪,\s]/g, '');
-        const newBalance = parseFloat(cleanVal);
+        // בודקים אם הוקלד מינוס איפשהו בטקסט (מגן על הקוד למקרה שהמינוס קפץ לסוף)
+        let isNegative = textValue.includes('-');
+
+        // מנקים מהטקסט הכל חוץ ממספרים ונקודה עשרונית
+        let cleanVal = textValue.replace(/[^0-9.]/g, '');
+        let newBalance = parseFloat(cleanVal);
 
         if(isNaN(newBalance)) {
             alert("נא להזין מספר תקין");
             fetchBalance();
             return;
+        }
+
+        // אם היה מינוס, אנחנו דואגים להחזיר את המספר למצב שלילי לפני השליחה
+        if(isNegative) {
+            newBalance = newBalance * -1;
         }
 
         try {
@@ -404,7 +421,7 @@
                 body: JSON.stringify(newBalance)
             });
             if(res.ok) {
-                fetchBalance(); // מרענן את התצוגה אחרי החישוב בשרת
+                fetchBalance(); // מעדכן חזרה מהשרת
             }
         } catch (e) { console.error(e); }
     }

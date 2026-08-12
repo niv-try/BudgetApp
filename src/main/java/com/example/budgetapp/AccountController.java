@@ -20,35 +20,44 @@ public class AccountController {
     public Account getBalance() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        // 1. שליפת העו"ש/יתרת הבסיס שהוגדרה ידנית
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
         double currentBalance = account.getBalance();
 
-        // 2. שליפת כל העסקאות של המשתמש וחישובן
         List<Transaction> transactions = transactionRepository.findByOwnerUsername(username);
         for (Transaction t : transactions) {
-            // אם זו הכנסה, מוסיפים לסכום
             if ("income".equals(t.getType())) {
                 currentBalance += t.getAmount();
-            }
-            // אם זו הוצאה או חיסכון, מורידים מהסכום
-            else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
+            } else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
                 currentBalance -= t.getAmount();
             }
         }
 
-        // מחזירים אובייקט עם הסכום המשוקלל
         return new Account(username, currentBalance);
     }
 
     @PostMapping
-    public Account updateBalance(@RequestBody double newBalance) {
+    public Account updateBalance(@RequestBody double desiredTotalBalance) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
 
-        account.setBalance(newBalance);
+        // נחשב קודם מה הסך של כל הפעולות הקיימות כרגע
+        double transactionsTotal = 0;
+        List<Transaction> transactions = transactionRepository.findByOwnerUsername(username);
+        for (Transaction t : transactions) {
+            if ("income".equals(t.getType())) {
+                transactionsTotal += t.getAmount();
+            } else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
+                transactionsTotal -= t.getAmount();
+            }
+        }
+
+        // הטריק: היתרה ההתחלתית שלך תהיה המספר שביקשת פחות כל הפעולות.
+        // כך שכל מספר שתקליד באתר יהפוך מיידית לתוצאה הסופית והמדויקת!
+        double newBaseBalance = desiredTotalBalance - transactionsTotal;
+        account.setBalance(newBaseBalance);
+
         return repository.save(account);
     }
 }

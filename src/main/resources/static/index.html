@@ -100,7 +100,6 @@
         .control-box:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
         .control-box i { color: var(--text-muted); font-size: 1rem; }
 
-        /* שימוש ב-background-color כדי לא לדרוס את חץ ה-SVG */
         .control-box select {
             border: none; background-color: transparent; font-family: inherit; font-size: 1rem;
             font-weight: 600; color: var(--text-main); outline: none; cursor: pointer;
@@ -164,7 +163,6 @@
         .form-group { flex: 1; min-width: 140px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); }
 
-        /* שינוי רקע לצבע נקי כדי שה-SVG יעבוד */
         input, select {
             width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.1);
             background-color: rgba(15, 23, 42, 0.6); border-radius: 10px; box-sizing: border-box;
@@ -172,15 +170,14 @@
         }
         input:focus, select:focus { outline: none; border-color: var(--accent-blue); background-color: rgba(15, 23, 42, 0.9); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); transform: translateY(-2px); }
 
-        /* --- התיקון החדש ל-Select: חץ מעוצב ממוקם ימינה פנימה --- */
         select {
             appearance: none;
             -webkit-appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: left 16px center; /* דוחף את החץ 16 פיקסלים פנימה מהצד השמאלי */
+            background-position: left 16px center;
             background-size: 16px;
-            padding-left: 40px; /* מונע מהטקסט לעלות על החץ */
+            padding-left: 40px;
             cursor: pointer;
         }
 
@@ -409,22 +406,20 @@
     const GOALS_API_URL = '/api/goals';
     const ACCOUNT_API_URL = '/api/account';
 
-    // --- מערכת סאונדים מורחבת ---
     const incomeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
     const expenseSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
     const savingsSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
     const goalSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3');
     const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
-    const deleteSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'); // צליל מחיקה חדש!
+    const deleteSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3');
 
     incomeSound.volume = 0.5;
     expenseSound.volume = 0.4;
     savingsSound.volume = 0.5;
     goalSound.volume = 0.6;
-    errorSound.volume = 0.8; // הוגבר כדי שיהיה ברור
+    errorSound.volume = 0.8;
     deleteSound.volume = 0.5;
 
-    // --- מערכת התראות ---
     let alertTimeout;
     function showCustomAlert(title, message) {
         const alertEl = document.getElementById('custom-alert');
@@ -433,7 +428,6 @@
 
         alertEl.classList.add('show');
 
-        // מוודא שהסאונד מופעל
         errorSound.currentTime = 0;
         errorSound.play().catch(e => console.log('Audio error:', e));
 
@@ -445,7 +439,6 @@
         document.getElementById('custom-alert').classList.remove('show');
     }
 
-    // --- מערכת אישור מחיקה (Modal Confirm) ---
     let confirmActionCallback = null;
 
     function showCustomConfirm(title, message, callback) {
@@ -574,9 +567,14 @@
 
     async function addSmartGoal(e) {
         e.preventDefault();
-        const name = document.getElementById('goal-name').value;
+        const name = document.getElementById('goal-name').value.trim();
         const targetAmount = parseFloat(document.getElementById('goal-amount').value);
         const targetMonth = document.getElementById('goal-date').value;
+
+        if (smartGoals.some(g => g.name === name)) {
+            showCustomAlert('שם יעד תפוס', 'כבר קיים יעד חכם עם השם הזה. אנא בחר שם ייחודי כדי שנוכל לעקוב אחריו כראוי.');
+            return;
+        }
 
         const goal = { name, targetAmount, targetMonth };
 
@@ -599,16 +597,30 @@
         } catch (error) { console.error(error); }
     }
 
-    // הפונקציה המעודכנת למחיקת יעד עם אישור חכם
     function deleteSmartGoal(id) {
-        showCustomConfirm("מחיקת יעד חכם", "האם אתה בטוח שברצונך למחוק יעד זה?\nהפעולה אינה ניתנת לביטול.", async () => {
+        const goalToDelete = smartGoals.find(g => g.id === id);
+        if (!goalToDelete) return;
+
+        showCustomConfirm("מחיקת יעד חכם", "האם אתה בטוח שברצונך למחוק יעד זה?\nשים לב: כל הפקדות החיסכון שבוצעו ליעד זה יימחקו גם כן!", async () => {
             try {
+                // מחיקת כל הפעולות (הפקדות) המקושרות ליעד הזה
+                const relatedTxs = transactions.filter(t => t.type === 'savings' && t.category === goalToDelete.name);
+                for (const tx of relatedTxs) {
+                    await fetch(`${API_URL}/${tx.id}`, { method: 'DELETE' });
+                }
+
+                // מחיקת היעד עצמו
                 const res = await fetch(`${GOALS_API_URL}/${id}`, { method: 'DELETE' });
                 if(res.ok) {
-                    deleteSound.play().catch(e => {}); // סאונד מחיקה!
+                    deleteSound.play().catch(e => {});
+
                     smartGoals = smartGoals.filter(g => g.id !== id);
+                    transactions = transactions.filter(t => !(t.type === 'savings' && t.category === goalToDelete.name));
+
                     handleTypeChange();
+                    populateMonthsDropdown();
                     renderUI();
+                    fetchBalance();
                 }
             } catch (error) { console.error(error); }
         });
@@ -681,13 +693,12 @@
         } catch (error) { console.error(error); }
     }
 
-    // הפונקציה המעודכנת למחיקת פעולה עם אישור חכם
     function removeTransaction(id) {
         showCustomConfirm("מחיקת פעולה", "האם למחוק פעולה זו מההיסטוריה?", async () => {
             try {
                 const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
                 if(response.ok) {
-                    deleteSound.play().catch(e => {}); // סאונד מחיקה!
+                    deleteSound.play().catch(e => {});
                     transactions = transactions.filter(t => t.id !== id);
                     populateMonthsDropdown();
                     renderUI();

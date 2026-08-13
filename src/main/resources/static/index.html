@@ -29,9 +29,23 @@
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
-        .container { max-width: 1050px; margin: 0 auto; }
+        /* --- רקע פיננסי מרחף --- */
+        .floating-bg-icons {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: -1; overflow: hidden;
+        }
+        @keyframes float-finance-icon {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            33% { transform: translateY(-50px) translateX(30px) rotate(120deg); }
+            66% { transform: translateY(20px) translateX(-20px) rotate(240deg); }
+            100% { transform: translateY(0) translateX(0) rotate(360deg); }
+        }
+
+        .container { max-width: 1050px; margin: 0 auto; position: relative; z-index: 1; }
 
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(30px); }
@@ -160,7 +174,7 @@
         .panel h2 i { color: var(--accent-blue); text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 
         .form-row { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
-        .form-group { flex: 1; min-width: 140px; }
+        .form-group { flex: 1; min-width: 140px; position: relative; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); }
 
         input, select {
@@ -171,15 +185,48 @@
         input:focus, select:focus { outline: none; border-color: var(--accent-blue); background-color: rgba(15, 23, 42, 0.9); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); transform: translateY(-2px); }
 
         select {
-            appearance: none;
-            -webkit-appearance: none;
+            appearance: none; -webkit-appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: left 16px center;
-            background-size: 16px;
-            padding-left: 40px;
-            cursor: pointer;
+            background-repeat: no-repeat; background-position: left 16px center;
+            background-size: 16px; padding-left: 40px; cursor: pointer;
         }
+
+        /* --- עיצוב לבחירת תאריך מותאמת אישית --- */
+        .custom-date-picker-wrapper { position: relative; width: 100%; }
+        .date-trigger {
+            width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(15, 23, 42, 0.6); border-radius: 10px; box-sizing: border-box;
+            font-family: inherit; font-size: 1rem; color: var(--text-main); cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;
+        }
+        .date-trigger:hover { border-color: var(--accent-blue); background-color: rgba(15, 23, 42, 0.9); }
+        .date-trigger i { color: var(--text-muted); }
+        .date-dropdown {
+            position: absolute; top: calc(100% + 5px); right: 0; width: 280px; max-width: 100vw;
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-blue);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-radius: 12px; backdrop-filter: blur(15px);
+            z-index: 100; opacity: 0; pointer-events: none; transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 15px;
+        }
+        .date-dropdown.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .no-date-btn {
+            width: 100%; padding: 12px; background: rgba(59, 130, 246, 0.15); border: 1px dashed var(--accent-blue);
+            color: #93c5fd; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+            margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1rem;
+        }
+        .no-date-btn:hover { background: rgba(59, 130, 246, 0.3); color: white; }
+        .months-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 5px;
+        }
+        .months-grid::-webkit-scrollbar { width: 4px; }
+        .months-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .months-grid::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
+        .month-option {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main); padding: 10px 5px; border-radius: 6px; cursor: pointer;
+            transition: all 0.2s; font-size: 0.85rem; text-align: center;
+        }
+        .month-option:hover { background: var(--accent-blue); border-color: var(--accent-blue); color: white; transform: scale(1.05); }
 
         button.submit-btn {
             width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -207,9 +254,11 @@
             transition: all 0.3s ease; animation: fadeUp 0.4s ease-out forwards;
         }
         .list li:hover { transform: translateX(-5px); background: rgba(30, 41, 59, 0.8); border-color: rgba(255,255,255,0.1); }
+
         .list li.income { border-right-color: #34d399; }
         .list li.expense { border-right-color: #f87171; }
         .list li.savings { border-right-color: #a78bfa; }
+        .list li.withdrawal { border-right-color: #3b82f6; }
 
         .details { display: flex; flex-direction: column; gap: 3px; }
         .details strong { font-size: 1rem; color: var(--text-main); }
@@ -221,6 +270,7 @@
         .list li.income .amount-controls span { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
         .list li.expense .amount-controls span { color: #f87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.2); }
         .list li.savings .amount-controls span { color: #a78bfa; text-shadow: 0 0 10px rgba(167, 139, 250, 0.2); }
+        .list li.withdrawal .amount-controls span { color: #93c5fd; text-shadow: 0 0 10px rgba(147, 197, 253, 0.2); }
 
         .delete-btn {
             background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: none; width: 28px; height: 28px;
@@ -325,23 +375,35 @@
         </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" style="position: relative; z-index: 50;">
         <h2><i class="fas fa-bullseye"></i> יעדים חכמים</h2>
 
         <div class="add-goal-form">
             <h3>הגדרת יעד חדש</h3>
             <form id="goal-form" class="form-row" style="margin-bottom: 0;">
                 <div class="form-group" style="flex: 2;">
-                    <input type="text" id="goal-name" placeholder="לדוגמה: רישיון ואופנוע A1, או חופשה בספטמבר..." required>
+                    <input type="text" id="goal-name" placeholder="לדוגמה: רישיון ואופנוע A1..." required>
                 </div>
                 <div class="form-group">
-                    <input type="number" id="goal-amount" placeholder="סכום יעד" required min="1">
+                    <input type="text" id="goal-amount" placeholder="סכום יעד" required inputmode="decimal">
                 </div>
-                <div class="form-group">
-                    <input type="month" id="goal-date" required>
+
+                <div class="form-group custom-date-picker-wrapper" id="date-picker-wrapper">
+                    <div class="date-trigger" id="date-trigger" onclick="toggleDatePicker()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="date-trigger-text">תאריך יעד (אופציונלי)</span>
+                    </div>
+                    <div class="date-dropdown" id="date-dropdown">
+                        <button type="button" class="no-date-btn" onclick="selectDate('', 'ללא תאריך (יעד פתוח)')">
+                            <i class="fas fa-infinity"></i> ללא תאריך (יעד פתוח)
+                        </button>
+                        <div class="months-grid" id="months-grid"></div>
+                    </div>
+                    <input type="hidden" id="goal-date" value="">
                 </div>
-                <div class="form-group" style="min-width: 100px;">
-                    <button type="submit" class="submit-btn" style="margin-top: 0; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);"><i class="fas fa-plus"></i></button>
+
+                <div class="form-group" style="min-width: 60px; max-width: 60px;">
+                    <button type="submit" class="submit-btn" style="margin-top: 0; height: 100%; padding: 0; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);"><i class="fas fa-plus"></i></button>
                 </div>
             </form>
         </div>
@@ -360,7 +422,8 @@
                             <select id="type" onchange="handleTypeChange()">
                                 <option value="expense">הוצאה</option>
                                 <option value="income">הכנסה</option>
-                                <option value="savings">חיסכון</option>
+                                <option value="savings">הפקדה לחיסכון</option>
+                                <option value="withdrawal">משיכה מחיסכון</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -375,7 +438,7 @@
                         </div>
                         <div class="form-group">
                             <label for="amount">סכום</label>
-                            <input type="number" id="amount" placeholder="0" required min="1" step="0.01">
+                            <input type="text" id="amount" placeholder="0" required inputmode="decimal">
                         </div>
                     </div>
                     <button type="submit" class="submit-btn"><i class="fas fa-check"></i> הוסף</button>
@@ -393,7 +456,8 @@
         <div class="panel">
             <h2><i class="fas fa-list"></i> היסטוריה</h2>
             <div class="search-bar-wrapper">
-                <input type="text" id="search-input" class="search-bar" placeholder="חפש לפי תיאור..." onkeyup="renderUI()">
+                <!-- עודכן הטקסט כך שיעיד גם על חיפוש תאריך -->
+                <input type="text" id="search-input" class="search-bar" placeholder="חפש לפי תיאור או תאריך (למשל 13.08)..." onkeyup="renderUI()">
                 <i class="fas fa-search"></i>
             </div>
             <ul id="list" class="list"></ul>
@@ -402,6 +466,42 @@
 </div>
 
 <script>
+    function createBackgroundIcons() {
+        const bgContainer = document.createElement('div');
+        bgContainer.className = 'floating-bg-icons';
+        document.body.appendChild(bgContainer);
+
+        const icons = ['fa-coins', 'fa-wallet', 'fa-chart-line', 'fa-piggy-bank', 'fa-credit-card', 'fa-money-bill-wave', 'fa-sack-dollar', 'fa-vault', 'fa-file-invoice-dollar', 'fa-chart-pie'];
+        const numIcons = 22;
+
+        for (let i = 0; i < numIcons; i++) {
+            const icon = document.createElement('i');
+            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+            icon.className = `fas ${randomIcon}`;
+
+            const size = Math.random() * 100 + 80;
+
+            let left, top;
+            const region = Math.random();
+            if (region < 0.4) { left = Math.random() * 20; top = Math.random() * 100; }
+            else if (region < 0.8) { left = 80 + Math.random() * 20; top = Math.random() * 100; }
+            else if (region < 0.9) { left = Math.random() * 100; top = Math.random() * 15; }
+            else { left = Math.random() * 100; top = 85 + Math.random() * 15; }
+
+            const duration = Math.random() * 40 + 60;
+            const delay = Math.random() * 20;
+            const opacity = Math.random() * 0.02 + 0.015;
+
+            icon.style.cssText = `
+                position: absolute; left: ${left}%; top: ${top}%; font-size: ${size}px;
+                color: rgba(147, 197, 253, ${opacity});
+                animation: float-finance-icon ${duration}s infinite ease-in-out; animation-delay: -${delay}s;
+            `;
+            bgContainer.appendChild(icon);
+        }
+    }
+    createBackgroundIcons();
+
     const API_URL = '/api/transactions';
     const GOALS_API_URL = '/api/goals';
     const ACCOUNT_API_URL = '/api/account';
@@ -425,41 +525,67 @@
         const alertEl = document.getElementById('custom-alert');
         document.getElementById('alert-title').innerText = title;
         document.getElementById('alert-message').innerText = message;
-
         alertEl.classList.add('show');
-
         errorSound.currentTime = 0;
         errorSound.play().catch(e => console.log('Audio error:', e));
-
         clearTimeout(alertTimeout);
         alertTimeout = setTimeout(() => { closeCustomAlert(); }, 4000);
     }
 
-    function closeCustomAlert() {
-        document.getElementById('custom-alert').classList.remove('show');
-    }
+    function closeCustomAlert() { document.getElementById('custom-alert').classList.remove('show'); }
 
     let confirmActionCallback = null;
-
     function showCustomConfirm(title, message, callback) {
         document.getElementById('confirm-title').innerText = title;
         document.getElementById('confirm-message').innerText = message;
         document.getElementById('confirm-overlay').classList.add('show');
         confirmActionCallback = callback;
     }
-
     function closeCustomConfirm() {
         document.getElementById('confirm-overlay').classList.remove('show');
         confirmActionCallback = null;
     }
-
     document.getElementById('confirm-cancel').addEventListener('click', closeCustomConfirm);
     document.getElementById('confirm-ok').addEventListener('click', () => {
-        if (confirmActionCallback) {
-            confirmActionCallback();
-        }
+        if (confirmActionCallback) confirmActionCallback();
         closeCustomConfirm();
     });
+
+    function initMonthPicker() {
+        const grid = document.getElementById('months-grid');
+        grid.innerHTML = '';
+        const today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonth = today.getMonth();
+        const hebrewMonths = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
+        for (let i = 0; i < 36; i++) {
+            let m = (currentMonth + i) % 12;
+            let y = currentYear + Math.floor((currentMonth + i) / 12);
+            let val = `${y}-${String(m + 1).padStart(2, '0')}`;
+            let text = `${hebrewMonths[m]} ${y}`;
+
+            let btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'month-option';
+            btn.innerText = text;
+            btn.onclick = () => selectDate(val, text);
+            grid.appendChild(btn);
+        }
+    }
+
+    function toggleDatePicker() { document.getElementById('date-dropdown').classList.toggle('show'); }
+    function selectDate(val, text) {
+        document.getElementById('goal-date').value = val;
+        document.getElementById('date-trigger-text').innerText = text;
+        document.getElementById('date-dropdown').classList.remove('show');
+    }
+    document.addEventListener('click', function(event) {
+        const wrapper = document.getElementById('date-picker-wrapper');
+        if (!wrapper.contains(event.target)) document.getElementById('date-dropdown').classList.remove('show');
+    });
+
+    initMonthPicker();
 
     const balanceUI = document.getElementById('balance');
     const savingsTotalUI = document.getElementById('savings-total');
@@ -491,6 +617,58 @@
         fetchBalance();
     }
 
+    function formatInputLive(e) {
+        let input = e.target;
+        let cursorPosition = input.selectionStart;
+        let originalLength = input.value.length;
+
+        let value = input.value.replace(/[^0-9.]/g, '');
+        let parts = value.split('.');
+        if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+        if (parts[0]) {
+            let num = parseInt(parts[0], 10);
+            if (!isNaN(num)) parts[0] = num.toLocaleString('en-US');
+            else parts[0] = '';
+        }
+        input.value = parts.join('.');
+
+        let newLength = input.value.length;
+        cursorPosition = cursorPosition + (newLength - originalLength);
+        input.setSelectionRange(cursorPosition, cursorPosition);
+    }
+
+    document.getElementById('amount').addEventListener('input', formatInputLive);
+    document.getElementById('goal-amount').addEventListener('input', formatInputLive);
+
+    balanceUI.addEventListener('focus', function() { this.innerText = this.innerText.replace(currencySymbol, ''); });
+    balanceUI.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); this.blur(); } });
+    balanceUI.addEventListener('input', function(e) {
+        let originalText = this.innerText;
+        let isNegative = originalText.startsWith('-');
+        let cleanVal = originalText.replace(/[^0-9.]/g, '');
+
+        let parts = cleanVal.split('.');
+        if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
+        if (parts[0]) {
+            let num = parseInt(parts[0], 10);
+            if (!isNaN(num)) parts[0] = num.toLocaleString('en-US');
+            else parts[0] = '';
+        }
+        let finalVal = (isNegative && parts[0] ? '-' : '') + parts.join('.');
+
+        if (originalText !== finalVal) {
+            this.innerText = finalVal;
+            try {
+                let range = document.createRange();
+                let sel = window.getSelection();
+                range.selectNodeContents(this);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } catch(err) {}
+        }
+    });
+
     function animateValue(obj, start, end, duration) {
         let startTimestamp = null;
         const step = (timestamp) => {
@@ -499,12 +677,13 @@
             const easeProgress = 1 - Math.pow(1 - progress, 4);
             const current = progress * (end - start) + start;
 
-            obj.innerText = currencySymbol + current.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            let sign = current < 0 ? '-' : '';
+            obj.innerText = sign + currencySymbol + Math.abs(current).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            } else {
-                obj.innerText = currencySymbol + end.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (progress < 1) { window.requestAnimationFrame(step); }
+            else {
+                let finalSign = end < 0 ? '-' : '';
+                obj.innerText = finalSign + currencySymbol + Math.abs(end).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             }
         };
         window.requestAnimationFrame(step);
@@ -512,7 +691,6 @@
 
     async function fetchData() {
         document.getElementById('currency-selector').value = currentCurrency;
-
         try {
             const [txRes, goalsRes] = await Promise.all([ fetch(API_URL), fetch(GOALS_API_URL) ]);
             if(txRes.ok) transactions = await txRes.json();
@@ -525,19 +703,25 @@
         } catch (error) { console.error(error); }
     }
 
-    async function fetchBalance(animate = false) {
+    async function fetchBalance(animate = true) {
         try {
             const res = await fetch(ACCOUNT_API_URL);
             if(res.ok) {
                 const acc = await res.json();
-                let bal = acc.balance;
+                let newBal = acc.balance;
+                let oldBal = currentBalanceAmount || 0;
 
-                currentBalanceAmount = bal;
+                currentBalanceAmount = newBal;
 
-                let sign = bal < 0 ? '-' : '';
                 balanceUI.style.direction = 'ltr';
                 balanceUI.style.display = 'inline-block';
-                balanceUI.innerText = sign + currencySymbol + Math.abs(bal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                if (animate && oldBal !== newBal) {
+                    animateValue(balanceUI, oldBal, newBal, 1500);
+                } else {
+                    let sign = newBal < 0 ? '-' : '';
+                    balanceUI.innerText = sign + currencySymbol + Math.abs(newBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
             }
         } catch (e) { console.error(e); }
     }
@@ -557,8 +741,7 @@
 
         try {
             const res = await fetch(ACCOUNT_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newBalance)
             });
             if(res.ok) fetchBalance();
@@ -568,8 +751,13 @@
     async function addSmartGoal(e) {
         e.preventDefault();
         const name = document.getElementById('goal-name').value.trim();
-        const targetAmount = parseFloat(document.getElementById('goal-amount').value);
+        const targetAmount = parseFloat(document.getElementById('goal-amount').value.replace(/,/g, ''));
         const targetMonth = document.getElementById('goal-date').value;
+
+        if (isNaN(targetAmount) || targetAmount <= 0) {
+            showCustomAlert('שגיאה', 'נא להזין סכום תקין.');
+            return;
+        }
 
         if (smartGoals.some(g => g.name === name)) {
             showCustomAlert('שם יעד תפוס', 'כבר קיים יעד חכם עם השם הזה. אנא בחר שם ייחודי כדי שנוכל לעקוב אחריו כראוי.');
@@ -580,17 +768,19 @@
 
         try {
             const res = await fetch(GOALS_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(goal)
             });
             if(res.ok) {
                 goalSound.play().catch(e => {});
                 const savedGoal = await res.json();
                 smartGoals.push(savedGoal);
+
                 document.getElementById('goal-name').value = '';
                 document.getElementById('goal-amount').value = '';
                 document.getElementById('goal-date').value = '';
+                document.getElementById('date-trigger-text').innerText = 'תאריך יעד (אופציונלי)';
+
                 handleTypeChange();
                 renderUI();
             }
@@ -601,22 +791,20 @@
         const goalToDelete = smartGoals.find(g => g.id === id);
         if (!goalToDelete) return;
 
-        showCustomConfirm("מחיקת יעד חכם", "האם אתה בטוח שברצונך למחוק יעד זה?\nשים לב: כל הפקדות החיסכון שבוצעו ליעד זה יימחקו גם כן!", async () => {
+        showCustomConfirm("מחיקת יעד חכם", "האם אתה בטוח שברצונך למחוק יעד זה?\nשים לב: כל הפקדות החיסכון והמשיכות שבוצעו ליעד זה יימחקו גם כן!", async () => {
             try {
-                // מחיקת כל הפעולות (הפקדות) המקושרות ליעד הזה
-                const relatedTxs = transactions.filter(t => t.type === 'savings' && t.category === goalToDelete.name);
-                for (const tx of relatedTxs) {
-                    await fetch(`${API_URL}/${tx.id}`, { method: 'DELETE' });
-                }
+                const relatedTxs = transactions.filter(t =>
+                    (t.type === 'savings' && t.category === goalToDelete.name) ||
+                    (t.type === 'income' && t.category === 'משיכה מ: ' + goalToDelete.name)
+                );
 
-                // מחיקת היעד עצמו
+                for (const tx of relatedTxs) { await fetch(`${API_URL}/${tx.id}`, { method: 'DELETE' }); }
+
                 const res = await fetch(`${GOALS_API_URL}/${id}`, { method: 'DELETE' });
                 if(res.ok) {
                     deleteSound.play().catch(e => {});
-
                     smartGoals = smartGoals.filter(g => g.id !== id);
-                    transactions = transactions.filter(t => !(t.type === 'savings' && t.category === goalToDelete.name));
-
+                    transactions = transactions.filter(t => !((t.type === 'savings' && t.category === goalToDelete.name) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalToDelete.name)));
                     handleTypeChange();
                     populateMonthsDropdown();
                     renderUI();
@@ -627,7 +815,7 @@
     }
 
     function handleTypeChange() {
-        if(type.value === 'savings') {
+        if(type.value === 'savings' || type.value === 'withdrawal') {
             if (smartGoals.length === 0) {
                 category.innerHTML = '<option value="" disabled selected>אין יעדים מוגדרים, צור יעד למעלה</option>';
             } else {
@@ -654,22 +842,52 @@
 
     async function addTransaction(e) {
         e.preventDefault();
+        const txTypeRaw = type.value;
+        const txAmount = parseFloat(amount.value.replace(/,/g, ''));
 
-        const txAmount = parseFloat(amount.value);
+        if (isNaN(txAmount) || txAmount <= 0) {
+            showCustomAlert('שגיאה', 'נא להזין סכום תקין.');
+            return;
+        }
 
-        if (type.value === 'savings') {
+        if (txTypeRaw === 'withdrawal') {
+            if (!category.value || category.value === '') {
+                showCustomAlert('שגיאה ביעד', 'אנא בחר יעד חכם למשוך ממנו.');
+                return;
+            }
+
+            const savedAmountRaw = transactions.filter(t => t.category === category.value && t.type === 'savings').reduce((acc, t) => acc + t.amount, 0);
+            const withdrawAmount = transactions.filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + category.value).reduce((acc, t) => acc + t.amount, 0);
+            const currentSavedInGoal = savedAmountRaw - withdrawAmount;
+
+            if (txAmount > currentSavedInGoal) {
+                showCustomAlert('חריגה ממשיכה', `לא ניתן למשוך סכום זה.\nביעד "${category.value}" יש כרגע רק ${currencySymbol}${currentSavedInGoal.toLocaleString('en-US')}.`);
+                return;
+            }
+        }
+        else if (txTypeRaw === 'savings') {
             if (!category.value || category.value === '') {
                 showCustomAlert('שגיאה ביעד', 'אנא צור יעד חיסכון קודם באזור "יעדים חכמים".');
                 return;
             }
             if (txAmount > currentBalanceAmount) {
-                showCustomAlert('חריגה מהתקציב', `לא ניתן להעביר לחיסכון.\nהסכום המבוקש (${currencySymbol}${txAmount}) גדול מהיתרה בעו"ש (${currencySymbol}${currentBalanceAmount}).`);
+                showCustomAlert('חריגה מהתקציב', `לא ניתן להעביר לחיסכון.\nהסכום המבוקש (${currencySymbol}${txAmount.toLocaleString('en-US')}) גדול מהיתרה בעו"ש (${currencySymbol}${currentBalanceAmount.toLocaleString('en-US')}).`);
                 return;
             }
         }
 
+        let finalType = txTypeRaw;
+        let finalCategory = category.value;
+        let finalText = text.value;
+
+        if (txTypeRaw === 'withdrawal') {
+            finalType = 'income';
+            finalCategory = 'משיכה מ: ' + category.value;
+            finalText = text.value || 'משיכה מחיסכון';
+        }
+
         const transaction = {
-            type: type.value, text: text.value, category: category.value,
+            type: finalType, text: finalText, category: finalCategory,
             amount: txAmount, date: new Date().toISOString().substring(0, 19)
         };
 
@@ -678,12 +896,16 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(transaction)
             });
-            if(response.ok) {
-                if (transaction.type === 'income') incomeSound.play().catch(e => {});
-                else if (transaction.type === 'expense') expenseSound.play().catch(e => {});
-                else if (transaction.type === 'savings') savingsSound.play().catch(e => {});
 
+            if(response.ok) {
                 const savedTx = await response.json();
+
+                const isWithdrawalTx = savedTx.type === 'income' && savedTx.category.startsWith('משיכה מ: ');
+                if (isWithdrawalTx) incomeSound.play().catch(e => {});
+                else if (savedTx.type === 'income') incomeSound.play().catch(e => {});
+                else if (savedTx.type === 'expense') expenseSound.play().catch(e => {});
+                else if (savedTx.type === 'savings') savingsSound.play().catch(e => {});
+
                 transactions.push(savedTx);
                 text.value = ''; amount.value = '';
                 populateMonthsDropdown();
@@ -735,7 +957,14 @@
             const d = new Date(t.date);
             const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             const matchMonth = filterMonth === 'all' || monthStr === filterMonth;
-            const matchSearch = t.text.toLowerCase().includes(searchTerm) || t.category.toLowerCase().includes(searchTerm);
+
+            // המרת התאריך של הפעולה לפורמט ישראלי (למשל 13.08.2026) כדי לאפשר חיפוש תאריך חופשי
+            const displayDateStr = d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const matchSearch = t.text.toLowerCase().includes(searchTerm) ||
+                t.category.toLowerCase().includes(searchTerm) ||
+                displayDateStr.includes(searchTerm);
+
             return matchMonth && matchSearch;
         });
 
@@ -762,23 +991,34 @@
         const savingsTxs = transactions.filter(t => t.type === 'savings');
 
         smartGoals.forEach(goal => {
-            const savedAmount = savingsTxs.filter(t => t.category === goal.name).reduce((acc, t) => acc + t.amount, 0);
-            const percentage = Math.min(100, (savedAmount / goal.targetAmount) * 100);
-            const today = new Date();
-            const targetDate = new Date(goal.targetMonth + "-01");
-            let monthsLeft = (targetDate.getFullYear() - today.getFullYear()) * 12 + targetDate.getMonth() - today.getMonth();
+            const savedAmountRaw = savingsTxs.filter(t => t.category === goal.name).reduce((acc, t) => acc + t.amount, 0);
+            const withdrawAmount = transactions.filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + goal.name).reduce((acc, t) => acc + t.amount, 0);
+            const savedAmount = savedAmountRaw - withdrawAmount;
+
+            const percentage = Math.min(100, goal.targetAmount > 0 ? (savedAmount / goal.targetAmount) * 100 : 0);
 
             let recommendationText = "";
+            let displayMonth = "";
             let remainingToSave = Math.max(0, goal.targetAmount - savedAmount);
 
-            if (remainingToSave === 0) { recommendationText = "🎉 היעד הושלם בהצלחה!"; }
-            else if (monthsLeft <= 0) { recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`; }
-            else {
-                const monthlyRequired = remainingToSave / monthsLeft;
-                recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ${currencySymbol}${monthlyRequired.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+            if (!goal.targetMonth || goal.targetMonth === "") {
+                displayMonth = "ללא תאריך (יעד פתוח)";
+                if (remainingToSave === 0) { recommendationText = "🎉 היעד הושלם בהצלחה!"; }
+                else { recommendationText = `חסרים עוד ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})} להשלמת היעד`; }
+            } else {
+                const targetDate = new Date(goal.targetMonth + "-01");
+                displayMonth = targetDate.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
+                const today = new Date();
+                let monthsLeft = (targetDate.getFullYear() - today.getFullYear()) * 12 + targetDate.getMonth() - today.getMonth();
+
+                if (remainingToSave === 0) { recommendationText = "🎉 היעד הושלם בהצלחה!"; }
+                else if (monthsLeft <= 0) { recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`; }
+                else {
+                    const monthlyRequired = remainingToSave / monthsLeft;
+                    recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ${currencySymbol}${monthlyRequired.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                }
             }
 
-            const displayMonth = targetDate.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
             const card = document.createElement('div');
             card.className = 'smart-goal-card';
             card.innerHTML = `
@@ -802,10 +1042,14 @@
     }
 
     function addTransactionDOM(transaction, index) {
-        let sign = transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : '→';
+        const isWithdrawal = transaction.type === 'income' && transaction.category.startsWith('משיכה מ: ');
+        const displayType = isWithdrawal ? 'withdrawal' : transaction.type;
+
+        let sign = displayType === 'income' ? '+' : displayType === 'withdrawal' ? '+' : displayType === 'expense' ? '-' : '→';
         const displayDate = new Date(transaction.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
         const item = document.createElement('li');
-        item.classList.add(transaction.type);
+        item.classList.add(displayType);
         item.style.animationDelay = `${index * 0.05}s`;
 
         item.innerHTML = `
@@ -817,9 +1061,12 @@
     }
 
     function updateValues(filteredData) {
-        const incomeTotal = filteredData.filter(item => item.type === 'income').reduce((acc, item) => (acc += item.amount), 0);
-        const expenseTotal = filteredData.filter(item => item.type === 'expense').reduce((acc, item) => (acc += item.amount), 0);
-        const savingsTotal = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => (acc += item.amount), 0);
+        const incomeTotal = filteredData.filter(item => item.type === 'income' && !item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
+        const expenseTotal = filteredData.filter(item => item.type === 'expense').reduce((acc, item) => acc + item.amount, 0);
+
+        const savingsTotalRaw = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => acc + item.amount, 0);
+        const withdrawalsTotal = filteredData.filter(item => item.type === 'income' && item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
+        const savingsTotal = savingsTotalRaw - withdrawalsTotal;
 
         const oldSavings = parseFloat(savingsTotalUI.getAttribute('data-val'));
         const oldIncome = parseFloat(income.getAttribute('data-val'));
@@ -832,6 +1079,7 @@
         savingsTotalUI.setAttribute('data-val', savingsTotal);
         income.setAttribute('data-val', incomeTotal);
         expense.setAttribute('data-val', expenseTotal);
+
         fetchBalance();
     }
 
@@ -890,8 +1138,13 @@
         let csvContent = "data:text/csv;charset=utf-8,\uFEFFתאריך,סוג,קטגוריה,תיאור,סכום\n";
         transactions.forEach(t => {
             const date = new Date(t.date).toLocaleDateString('he-IL');
-            const typeLabel = t.type === 'income' ? 'הכנסה' : t.type === 'expense' ? 'הוצאה' : 'חיסכון';
-            csvContent += `"${date}","${typeLabel}","${t.category}","${t.text}","${t.amount}"\n`;
+            const isWithdrawal = t.type === 'income' && t.category.startsWith('משיכה מ: ');
+            const typeLabel = isWithdrawal ? 'משיכה מחיסכון' : t.type === 'income' ? 'הכנסה' : t.type === 'expense' ? 'הוצאה' : 'חיסכון';
+
+            let catLabel = t.category;
+            if (isWithdrawal) catLabel = catLabel.replace('משיכה מ: ', '');
+
+            csvContent += `"${date}","${typeLabel}","${catLabel}","${t.text}","${t.amount}"\n`;
         });
         const link = document.createElement("a");
         link.href = encodeURI(csvContent);

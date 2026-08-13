@@ -7,16 +7,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* העתקנו את אותו עיצוב יוקרתי של מסך ההתחברות */
-        :root { --glass-bg: rgba(30, 41, 59, 0.85); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); --text-main: #f8fafc; --text-muted: #94a3b8; --accent-purple: #8b5cf6; }
+        :root { --glass-bg: rgba(30, 41, 59, 0.85); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); --text-main: #f8fafc; --text-muted: #94a3b8; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Assistant', sans-serif; background: radial-gradient(circle at center, #1e293b, #0f172a, #020617); margin: 0; padding: 20px 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); overflow-x: hidden; position: relative; }
-        .bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1; animation: float 10s infinite alternate ease-in-out; pointer-events: none; }
-        .orb-1 { width: 300px; height: 300px; background: rgba(59, 130, 246, 0.18); top: -80px; right: -50px; }
-        .orb-2 { width: 350px; height: 350px; background: rgba(16, 185, 129, 0.15); bottom: -100px; left: -80px; animation-delay: -5s; }
-        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(20px, 35px) scale(1.08); } }
+
+        /* --- רקע פיננסי מרחף --- */
+        .floating-bg-icons {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: -1; overflow: hidden;
+        }
+        @keyframes float-finance-icon {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            33% { transform: translateY(-50px) translateX(30px) rotate(120deg); }
+            66% { transform: translateY(20px) translateX(-20px) rotate(240deg); }
+            100% { transform: translateY(0) translateX(0) rotate(360deg); }
+        }
+
         @keyframes fadeUp { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .login-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px 25px; border-radius: 24px; box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border); width: 100%; max-width: 400px; text-align: center; animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* --- מערכת התראות מעוצבת (Toast) --- */
+        .custom-alert {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(239, 68, 68, 0.3);
+            border-bottom: 4px solid #ef4444; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.2);
+            backdrop-filter: blur(15px); border-radius: 14px; padding: 16px 20px;
+            display: flex; align-items: center; gap: 15px; z-index: 9999;
+            opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 320px; max-width: 90vw;
+        }
+        .custom-alert.success { border-color: rgba(16, 185, 129, 0.3); border-bottom-color: #10b981; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.2); }
+        .custom-alert.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .alert-icon { font-size: 2rem; }
+        .custom-alert.success .alert-icon { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .custom-alert:not(.success) .alert-icon { color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+        .alert-content { flex: 1; }
+        .alert-title { color: white; font-weight: 800; font-size: 1.1rem; margin-bottom: 4px; }
+        .alert-message { color: var(--text-muted); font-size: 0.95rem; line-height: 1.4; }
+
+        .login-card { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px 25px; border-radius: 24px; box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border); width: 100%; max-width: 400px; text-align: center; animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; z-index: 1; }
         .icon-wrapper { width: 70px; height: 70px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin: 0 auto 15px auto; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); }
         h1 { margin: 0 0 5px 0; font-size: 2rem; font-weight: 800; }
         p.subtitle { color: var(--text-muted); margin: 0 0 30px 0; font-size: 1rem; font-weight: 600; }
@@ -27,14 +56,20 @@
         .input-group:focus-within i { color: #10b981; }
         .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 14px; font-size: 1.15rem; font-weight: 800; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6); }
-        .error-message { color: #fca5a5; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 20px; font-size: 0.95rem; font-weight: 600; display: none; }
         .back-link { margin-top: 25px; display: block; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: color 0.3s; }
         .back-link:hover { color: white; }
     </style>
 </head>
 <body>
-<div class="bg-orb orb-1"></div>
-<div class="bg-orb orb-2"></div>
+
+<!-- חלונית התראה מעוצבת -->
+<div id="custom-alert" class="custom-alert">
+    <div id="alert-icon-wrapper" class="alert-icon"><i id="alert-icon-class" class="fas fa-exclamation-circle"></i></div>
+    <div class="alert-content">
+        <div id="alert-title" class="alert-title">שגיאה</div>
+        <div id="alert-message" class="alert-message">הודעת שגיאה</div>
+    </div>
+</div>
 
 <div class="login-card">
     <div class="icon-wrapper">
@@ -42,8 +77,6 @@
     </div>
     <h1>צור חשבון</h1>
     <p class="subtitle">הצטרף לניהול התקציב</p>
-
-    <div id="error-box" class="error-message"></div>
 
     <form id="registerForm">
         <div class="input-group">
@@ -65,11 +98,79 @@
 </div>
 
 <script>
+    // יצירת רקע הפיננסים המרחף במסך ההרשמה
+    function createBackgroundIcons() {
+        const bgContainer = document.createElement('div');
+        bgContainer.className = 'floating-bg-icons';
+        document.body.appendChild(bgContainer);
+
+        const icons = ['fa-coins', 'fa-wallet', 'fa-chart-line', 'fa-piggy-bank', 'fa-credit-card', 'fa-money-bill-wave', 'fa-sack-dollar', 'fa-vault', 'fa-file-invoice-dollar', 'fa-chart-pie'];
+        const numIcons = 18;
+
+        for (let i = 0; i < numIcons; i++) {
+            const icon = document.createElement('i');
+            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+            icon.className = `fas ${randomIcon}`;
+
+            const size = Math.random() * 90 + 70;
+
+            let left, top;
+            const region = Math.random();
+            if (region < 0.4) { left = Math.random() * 20; top = Math.random() * 100; }
+            else if (region < 0.8) { left = 80 + Math.random() * 20; top = Math.random() * 100; }
+            else if (region < 0.9) { left = Math.random() * 100; top = Math.random() * 15; }
+            else { left = Math.random() * 100; top = 85 + Math.random() * 15; }
+
+            const duration = Math.random() * 40 + 60;
+            const delay = Math.random() * 20;
+            const opacity = Math.random() * 0.02 + 0.015;
+
+            icon.style.cssText = `
+                    position: absolute; left: ${left}%; top: ${top}%; font-size: ${size}px;
+                    color: rgba(147, 197, 253, ${opacity});
+                    animation: float-finance-icon ${duration}s infinite ease-in-out; animation-delay: -${delay}s;
+                `;
+            bgContainer.appendChild(icon);
+        }
+    }
+    createBackgroundIcons();
+
+    const successSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+    const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
+    successSound.volume = 0.5;
+    errorSound.volume = 0.5;
+
+    let alertTimeout;
+    function showCustomAlert(title, message, isSuccess = false) {
+        const alertEl = document.getElementById('custom-alert');
+        const iconClass = document.getElementById('alert-icon-class');
+
+        document.getElementById('alert-title').innerText = title;
+        document.getElementById('alert-message').innerText = message;
+
+        if (isSuccess) {
+            alertEl.classList.add('success');
+            iconClass.className = 'fas fa-check-circle';
+            successSound.currentTime = 0;
+            successSound.play().catch(e => {});
+        } else {
+            alertEl.classList.remove('success');
+            iconClass.className = 'fas fa-exclamation-circle';
+            errorSound.currentTime = 0;
+            errorSound.play().catch(e => {});
+        }
+
+        alertEl.classList.add('show');
+        clearTimeout(alertTimeout);
+        alertTimeout = setTimeout(() => {
+            alertEl.classList.remove('show');
+        }, 4000);
+    }
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        const errorBox = document.getElementById('error-box');
 
         try {
             const res = await fetch('/api/auth/register', {
@@ -79,15 +180,17 @@
             });
 
             if(res.ok) {
-                alert('החשבון נוצר בהצלחה! מועבר למסך ההתחברות...');
-                window.location.href = '/login.html';
+                showCustomAlert('החשבון נוצר בהצלחה!', 'מועבר למסך ההתחברות...', true);
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1500);
             } else {
                 const errorText = await res.text();
-                errorBox.style.display = 'block';
-                errorBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorText}`;
+                showCustomAlert('שגיאה בהרשמה', errorText, false);
             }
         } catch (err) {
             console.error(err);
+            showCustomAlert('שגיאת תקשורת', 'לא ניתן להתחבר לשרת כרגע.', false);
         }
     });
 </script>

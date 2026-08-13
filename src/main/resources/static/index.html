@@ -22,14 +22,24 @@
 
         body {
             font-family: 'Assistant', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a, #020617);
-            background-attachment: fixed;
             margin: 0;
             padding: 20px 10px;
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+        }
+
+        /* --- התיקון לאייפון: שכבת רקע מקובעת ונפרדת --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a, #020617);
+            z-index: -2;
         }
 
         /* --- רקע פיננסי מרחף --- */
@@ -701,7 +711,7 @@
     balanceUI.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); this.blur(); } });
     balanceUI.addEventListener('input', function(e) {
         let originalText = this.innerText;
-        let isNegative = originalText.startsWith('-');
+        let isNegative = originalText.includes('-');
         let cleanVal = originalText.replace(/[^0-9.]/g, '');
 
         let parts = cleanVal.split('.');
@@ -711,7 +721,13 @@
             if (!isNaN(num)) parts[0] = num.toLocaleString('en-US');
             else parts[0] = '';
         }
-        let finalVal = (isNegative && parts[0] ? '-' : '') + parts.join('.');
+
+        let finalVal = '';
+        if (cleanVal === '' && isNegative) {
+            finalVal = '-';
+        } else {
+            finalVal = (isNegative ? '-' : '') + parts.join('.');
+        }
 
         if (originalText !== finalVal) {
             this.innerText = finalVal;
@@ -786,6 +802,12 @@
     async function updateManualBalance(textValue) {
         let isNegative = textValue.includes('-');
         let cleanVal = textValue.replace(/[^0-9.]/g, '');
+
+        if (cleanVal === '') {
+            fetchBalance(false);
+            return;
+        }
+
         let newBalance = parseFloat(cleanVal);
 
         if(isNaN(newBalance)) {

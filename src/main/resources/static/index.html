@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ניהול תקציב חכם | ניב אגוז</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,74 +38,91 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* --- מערכת התראות (Toast) --- */
+        .custom-alert {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(239, 68, 68, 0.3);
+            border-bottom: 4px solid #ef4444; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.2);
+            backdrop-filter: blur(15px); border-radius: 14px; padding: 16px 20px;
+            display: flex; align-items: center; gap: 15px; z-index: 9999;
+            opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 320px; max-width: 90vw;
+        }
+        .custom-alert.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .alert-icon { color: #ef4444; font-size: 2rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+        .alert-content { flex: 1; }
+        .alert-title { color: white; font-weight: 800; font-size: 1.1rem; margin-bottom: 4px; }
+        .alert-message { color: var(--text-muted); font-size: 0.95rem; line-height: 1.4; }
+        .alert-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; transition: color 0.2s; padding: 5px; }
+        .alert-close:hover { color: white; }
+
+        /* --- מערכת אישור מחיקה (Modal Confirm) --- */
+        .confirm-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.3s ease;
+        }
+        .confirm-overlay.show { opacity: 1; pointer-events: auto; }
+        .confirm-modal {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); padding: 30px; border-radius: 20px;
+            text-align: center; max-width: 90%; width: 350px;
+            transform: translateY(30px) scale(0.95); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .confirm-overlay.show .confirm-modal { transform: translateY(0) scale(1); }
+        .confirm-icon { font-size: 3rem; color: #f59e0b; margin-bottom: 15px; text-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+        .confirm-title { color: white; font-size: 1.3rem; margin: 0 0 10px 0; font-weight: 800; }
+        .confirm-message { color: var(--text-muted); margin: 0 0 25px 0; font-size: 1rem; line-height: 1.4;}
+        .confirm-actions { display: flex; gap: 15px; }
+        .btn-cancel, .btn-danger {
+            flex: 1; padding: 12px; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: white; }
+        .btn-cancel:hover { background: rgba(255,255,255,0.2); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5); filter: brightness(1.1); }
+        .btn-danger:active { transform: translateY(1px) scale(0.98); }
+
+
         .header { text-align: center; margin-bottom: 30px; animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .header h1 { margin: 0; font-size: 2.2rem; color: #ffffff; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); letter-spacing: -0.5px;}
         .credit { color: var(--text-muted); font-size: 1.1rem; margin-top: 5px; margin-bottom: 0; font-weight: 600; }
 
         .top-controls { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap;}
         .control-box {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
+            background: var(--glass-bg); backdrop-filter: blur(10px); padding: 10px 20px;
+            border-radius: 12px; display: flex; align-items: center; gap: 10px;
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
             transition: transform 0.3s ease, border-color 0.3s ease;
         }
         .control-box:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
         .control-box i { color: var(--text-muted); font-size: 1rem; }
+
+        /* שימוש ב-background-color כדי לא לדרוס את חץ ה-SVG */
         .control-box select {
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-main);
-            outline: none;
-            cursor: pointer;
+            border: none; background-color: transparent; font-family: inherit; font-size: 1rem;
+            font-weight: 600; color: var(--text-main); outline: none; cursor: pointer;
         }
         select option { background: #1e293b; color: #f8fafc; }
 
         .export-btn {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white;
+            border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 12px;
+            font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;
         }
-        .export-btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5);
-            filter: brightness(1.1);
-        }
+        .export-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5); filter: brightness(1.1); }
         .export-btn:active { transform: translateY(1px) scale(0.98); }
 
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            padding: 20px 15px;
-            border-radius: 16px;
-            box-shadow: var(--glass-shadow);
-            text-align: center;
-            border: 1px solid var(--glass-border);
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
+            background: var(--glass-bg); backdrop-filter: blur(10px); padding: 20px 15px;
+            border-radius: 16px; box-shadow: var(--glass-shadow); text-align: center;
+            border: 1px solid var(--glass-border); opacity: 0; animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden;
         }
-
         .dashboard .card:nth-child(1) { animation-delay: 0.1s; }
         .dashboard .card:nth-child(2) { animation-delay: 0.2s; }
         .dashboard .card:nth-child(3) { animation-delay: 0.3s; }
@@ -136,15 +153,9 @@
         }
 
         .panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: var(--glass-shadow);
-            border: 1px solid var(--glass-border);
-            opacity: 0;
-            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: 0.3s;
+            background: var(--glass-bg); backdrop-filter: blur(10px); padding: 20px;
+            border-radius: 20px; box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);
+            opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.3s;
         }
         .panel h2 { margin-top: 0; font-size: 1.2rem; color: var(--text-main); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
         .panel h2 i { color: var(--accent-blue); text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
@@ -153,45 +164,32 @@
         .form-group { flex: 1; min-width: 140px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); }
 
+        /* שינוי רקע לצבע נקי כדי שה-SVG יעבוד */
         input, select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 1rem;
-            color: var(--text-main);
-            transition: all 0.3s ease;
+            width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(15, 23, 42, 0.6); border-radius: 10px; box-sizing: border-box;
+            font-family: inherit; font-size: 1rem; color: var(--text-main); transition: all 0.3s ease;
         }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            background: rgba(15, 23, 42, 0.9);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-            transform: translateY(-2px);
+        input:focus, select:focus { outline: none; border-color: var(--accent-blue); background-color: rgba(15, 23, 42, 0.9); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); transform: translateY(-2px); }
+
+        /* --- התיקון החדש ל-Select: חץ מעוצב ממוקם ימינה פנימה --- */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 16px center; /* דוחף את החץ 16 פיקסלים פנימה מהצד השמאלי */
+            background-size: 16px;
+            padding-left: 40px; /* מונע מהטקסט לעלות על החץ */
+            cursor: pointer;
         }
 
         button.submit-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 800;
+            cursor: pointer; margin-top: 5px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
         }
-        button.submit-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-            filter: brightness(1.1);
-        }
+        button.submit-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); filter: brightness(1.1); }
         button.submit-btn:active { transform: translateY(1px) scale(0.98); }
 
         .search-bar-wrapper { position: relative; margin-bottom: 15px; }
@@ -200,27 +198,18 @@
         .search-bar { width: 100%; padding: 12px 40px 12px 14px; }
 
         .list { list-style: none; padding: 0; margin: 0; max-height: 350px; overflow-y: auto; scroll-behavior: smooth;}
-
         .list::-webkit-scrollbar { width: 6px; }
         .list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
         .list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
         .list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
 
         .list li {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-right: 4px solid #475569;
-            margin-bottom: 10px;
-            padding: 12px 15px;
-            display: flex;
-            justify-content: space-between;
-            border-radius: 10px;
-            align-items: center;
-            transition: all 0.3s ease;
-            animation: fadeUp 0.4s ease-out forwards;
+            background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.05);
+            border-right: 4px solid #475569; margin-bottom: 10px; padding: 12px 15px;
+            display: flex; justify-content: space-between; border-radius: 10px; align-items: center;
+            transition: all 0.3s ease; animation: fadeUp 0.4s ease-out forwards;
         }
         .list li:hover { transform: translateX(-5px); background: rgba(30, 41, 59, 0.8); border-color: rgba(255,255,255,0.1); }
-
         .list li.income { border-right-color: #34d399; }
         .list li.expense { border-right-color: #f87171; }
         .list li.savings { border-right-color: #a78bfa; }
@@ -237,14 +226,8 @@
         .list li.savings .amount-controls span { color: #a78bfa; text-shadow: 0 0 10px rgba(167, 139, 250, 0.2); }
 
         .delete-btn {
-            background: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border: none;
-            width: 28px; height: 28px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s ease;
+            background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: none; width: 28px; height: 28px;
+            border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
         }
         .delete-btn:hover { background: rgba(239, 68, 68, 0.3); color: #fff; transform: scale(1.1); }
 
@@ -253,13 +236,8 @@
 
         .smart-goals-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px;}
         .smart-goal-card {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 16px;
-            position: relative;
-            transition: all 0.3s ease;
-            animation: fadeUp 0.5s ease forwards;
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.05); padding: 20px;
+            border-radius: 16px; position: relative; transition: all 0.3s ease; animation: fadeUp 0.5s ease forwards;
         }
         .smart-goal-card:hover { transform: translateY(-5px); border-color: rgba(139, 92, 246, 0.3); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15); }
 
@@ -268,35 +246,40 @@
         .goal-target-date { font-size: 0.85rem; color: var(--text-muted); margin-top: 3px; }
 
         .progress-bar-bg { background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; margin-bottom: 10px; overflow: hidden;}
-        .progress-bar-fill {
-            background: linear-gradient(90deg, #a78bfa, #3b82f6);
-            height: 100%;
-            border-radius: 5px;
-            width: 0%;
-            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
-        }
-
+        .progress-bar-fill { background: linear-gradient(90deg, #a78bfa, #3b82f6); height: 100%; border-radius: 5px; width: 0%; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
         .goal-stats { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 10px;}
         .goal-saved { color: var(--text-main); font-weight: 700;}
         .goal-target { color: var(--text-muted); }
-
-        .monthly-recommendation {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            text-align: center;
-            font-weight: 600;
-        }
-
+        .monthly-recommendation { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #34d399; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; text-align: center; font-weight: 600; }
         .add-goal-form { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 20px;}
         .add-goal-form h3 { margin: 0 0 15px 0; font-size: 1rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
+
+<!-- חלונית התראה (Toast) לשגיאות -->
+<div id="custom-alert" class="custom-alert">
+    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+    <div class="alert-content">
+        <div id="alert-title" class="alert-title">שגיאה</div>
+        <div id="alert-message" class="alert-message">הודעת שגיאה כללית</div>
+    </div>
+    <button class="alert-close" onclick="closeCustomAlert()"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- חלונית אישור מחיקה (Modal Confirm) -->
+<div id="confirm-overlay" class="confirm-overlay">
+    <div class="confirm-modal">
+        <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
+        <h3 id="confirm-title" class="confirm-title">אישור פעולה</h3>
+        <p id="confirm-message" class="confirm-message">האם אתה בטוח שברצונך למחוק?</p>
+        <div class="confirm-actions">
+            <button id="confirm-cancel" class="btn-cancel">ביטול</button>
+            <button id="confirm-ok" class="btn-danger">כן, מחק</button>
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="header">
         <h1>ניהול תקציב חכם</h1>
@@ -309,7 +292,6 @@
                     <option value="USD">$ דולרים</option>
                 </select>
             </div>
-
             <div class="control-box">
                 <i class="fas fa-calendar-alt"></i>
                 <select id="month-filter" onchange="renderUI()"></select>
@@ -427,17 +409,64 @@
     const GOALS_API_URL = '/api/goals';
     const ACCOUNT_API_URL = '/api/account';
 
-    // הגדרת מערכת הסאונדים עם קבצי אודיו חיצוניים
+    // --- מערכת סאונדים מורחבת ---
     const incomeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
     const expenseSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
     const savingsSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
     const goalSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3');
+    const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
+    const deleteSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'); // צליל מחיקה חדש!
 
-    // הנמכת ווליום כדי שיהיה נעים לאוזן
     incomeSound.volume = 0.5;
     expenseSound.volume = 0.4;
     savingsSound.volume = 0.5;
     goalSound.volume = 0.6;
+    errorSound.volume = 0.8; // הוגבר כדי שיהיה ברור
+    deleteSound.volume = 0.5;
+
+    // --- מערכת התראות ---
+    let alertTimeout;
+    function showCustomAlert(title, message) {
+        const alertEl = document.getElementById('custom-alert');
+        document.getElementById('alert-title').innerText = title;
+        document.getElementById('alert-message').innerText = message;
+
+        alertEl.classList.add('show');
+
+        // מוודא שהסאונד מופעל
+        errorSound.currentTime = 0;
+        errorSound.play().catch(e => console.log('Audio error:', e));
+
+        clearTimeout(alertTimeout);
+        alertTimeout = setTimeout(() => { closeCustomAlert(); }, 4000);
+    }
+
+    function closeCustomAlert() {
+        document.getElementById('custom-alert').classList.remove('show');
+    }
+
+    // --- מערכת אישור מחיקה (Modal Confirm) ---
+    let confirmActionCallback = null;
+
+    function showCustomConfirm(title, message, callback) {
+        document.getElementById('confirm-title').innerText = title;
+        document.getElementById('confirm-message').innerText = message;
+        document.getElementById('confirm-overlay').classList.add('show');
+        confirmActionCallback = callback;
+    }
+
+    function closeCustomConfirm() {
+        document.getElementById('confirm-overlay').classList.remove('show');
+        confirmActionCallback = null;
+    }
+
+    document.getElementById('confirm-cancel').addEventListener('click', closeCustomConfirm);
+    document.getElementById('confirm-ok').addEventListener('click', () => {
+        if (confirmActionCallback) {
+            confirmActionCallback();
+        }
+        closeCustomConfirm();
+    });
 
     const balanceUI = document.getElementById('balance');
     const savingsTotalUI = document.getElementById('savings-total');
@@ -456,6 +485,7 @@
     let expenseChartInstance = null;
     let transactions = [];
     let smartGoals = [];
+    let currentBalanceAmount = 0;
 
     let currentCurrency = localStorage.getItem('budgetAppCurrency') || 'ILS';
     let currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
@@ -464,7 +494,6 @@
         currentCurrency = document.getElementById('currency-selector').value;
         currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
         localStorage.setItem('budgetAppCurrency', currentCurrency);
-
         renderUI();
         fetchBalance();
     }
@@ -474,7 +503,6 @@
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
             const easeProgress = 1 - Math.pow(1 - progress, 4);
             const current = progress * (end - start) + start;
 
@@ -493,11 +521,7 @@
         document.getElementById('currency-selector').value = currentCurrency;
 
         try {
-            const [txRes, goalsRes] = await Promise.all([
-                fetch(API_URL),
-                fetch(GOALS_API_URL)
-            ]);
-
+            const [txRes, goalsRes] = await Promise.all([ fetch(API_URL), fetch(GOALS_API_URL) ]);
             if(txRes.ok) transactions = await txRes.json();
             if(goalsRes.ok) smartGoals = await goalsRes.json();
 
@@ -505,7 +529,7 @@
             populateMonthsDropdown();
             renderUI();
             fetchBalance(true);
-        } catch (error) { console.error("Error fetching data:", error); }
+        } catch (error) { console.error(error); }
     }
 
     async function fetchBalance(animate = false) {
@@ -515,10 +539,11 @@
                 const acc = await res.json();
                 let bal = acc.balance;
 
+                currentBalanceAmount = bal;
+
                 let sign = bal < 0 ? '-' : '';
                 balanceUI.style.direction = 'ltr';
                 balanceUI.style.display = 'inline-block';
-
                 balanceUI.innerText = sign + currencySymbol + Math.abs(bal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             }
         } catch (e) { console.error(e); }
@@ -530,7 +555,7 @@
         let newBalance = parseFloat(cleanVal);
 
         if(isNaN(newBalance)) {
-            alert("נא להזין מספר תקין");
+            showCustomAlert('שגיאת הקלדה', 'נא להזין מספר תקין בעו"ש.');
             fetchBalance();
             return;
         }
@@ -562,9 +587,7 @@
                 body: JSON.stringify(goal)
             });
             if(res.ok) {
-                // מנגן את צליל היעד החדש בהצלחה
-                goalSound.play().catch(e => console.log("Audio blocked by browser auto-play policy"));
-
+                goalSound.play().catch(e => {});
                 const savedGoal = await res.json();
                 smartGoals.push(savedGoal);
                 document.getElementById('goal-name').value = '';
@@ -576,16 +599,19 @@
         } catch (error) { console.error(error); }
     }
 
-    async function deleteSmartGoal(id) {
-        if(!confirm("האם למחוק יעד זה?")) return;
-        try {
-            const res = await fetch(`${GOALS_API_URL}/${id}`, { method: 'DELETE' });
-            if(res.ok) {
-                smartGoals = smartGoals.filter(g => g.id !== id);
-                handleTypeChange();
-                renderUI();
-            }
-        } catch (error) { console.error(error); }
+    // הפונקציה המעודכנת למחיקת יעד עם אישור חכם
+    function deleteSmartGoal(id) {
+        showCustomConfirm("מחיקת יעד חכם", "האם אתה בטוח שברצונך למחוק יעד זה?\nהפעולה אינה ניתנת לביטול.", async () => {
+            try {
+                const res = await fetch(`${GOALS_API_URL}/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    deleteSound.play().catch(e => {}); // סאונד מחיקה!
+                    smartGoals = smartGoals.filter(g => g.id !== id);
+                    handleTypeChange();
+                    renderUI();
+                }
+            } catch (error) { console.error(error); }
+        });
     }
 
     function handleTypeChange() {
@@ -616,39 +642,38 @@
 
     async function addTransaction(e) {
         e.preventDefault();
-        if (type.value === 'savings' && (!category.value || category.value === '')) {
-            alert('אנא צור יעד חיסכון קודם.');
-            return;
+
+        const txAmount = parseFloat(amount.value);
+
+        if (type.value === 'savings') {
+            if (!category.value || category.value === '') {
+                showCustomAlert('שגיאה ביעד', 'אנא צור יעד חיסכון קודם באזור "יעדים חכמים".');
+                return;
+            }
+            if (txAmount > currentBalanceAmount) {
+                showCustomAlert('חריגה מהתקציב', `לא ניתן להעביר לחיסכון.\nהסכום המבוקש (${currencySymbol}${txAmount}) גדול מהיתרה בעו"ש (${currencySymbol}${currentBalanceAmount}).`);
+                return;
+            }
         }
 
         const transaction = {
-            type: type.value,
-            text: text.value,
-            category: category.value,
-            amount: parseFloat(amount.value),
-            date: new Date().toISOString().substring(0, 19)
+            type: type.value, text: text.value, category: category.value,
+            amount: txAmount, date: new Date().toISOString().substring(0, 19)
         };
 
         try {
             const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(transaction)
             });
             if(response.ok) {
-                // מנגן את הסאונד המתאים לפי סוג הפעולה שבוצעה
-                if (transaction.type === 'income') {
-                    incomeSound.play().catch(e => {});
-                } else if (transaction.type === 'expense') {
-                    expenseSound.play().catch(e => {});
-                } else if (transaction.type === 'savings') {
-                    savingsSound.play().catch(e => {});
-                }
+                if (transaction.type === 'income') incomeSound.play().catch(e => {});
+                else if (transaction.type === 'expense') expenseSound.play().catch(e => {});
+                else if (transaction.type === 'savings') savingsSound.play().catch(e => {});
 
                 const savedTx = await response.json();
                 transactions.push(savedTx);
-                text.value = '';
-                amount.value = '';
+                text.value = ''; amount.value = '';
                 populateMonthsDropdown();
                 renderUI();
                 fetchBalance();
@@ -656,16 +681,20 @@
         } catch (error) { console.error(error); }
     }
 
-    async function removeTransaction(id) {
-        try {
-            const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-            if(response.ok) {
-                transactions = transactions.filter(t => t.id !== id);
-                populateMonthsDropdown();
-                renderUI();
-                fetchBalance();
-            }
-        } catch (error) { console.error(error); }
+    // הפונקציה המעודכנת למחיקת פעולה עם אישור חכם
+    function removeTransaction(id) {
+        showCustomConfirm("מחיקת פעולה", "האם למחוק פעולה זו מההיסטוריה?", async () => {
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                if(response.ok) {
+                    deleteSound.play().catch(e => {}); // סאונד מחיקה!
+                    transactions = transactions.filter(t => t.id !== id);
+                    populateMonthsDropdown();
+                    renderUI();
+                    fetchBalance();
+                }
+            } catch (error) { console.error(error); }
+        });
     }
 
     function populateMonthsDropdown() {
@@ -722,10 +751,7 @@
         const savingsTxs = transactions.filter(t => t.type === 'savings');
 
         smartGoals.forEach(goal => {
-            const savedAmount = savingsTxs
-                .filter(t => t.category === goal.name)
-                .reduce((acc, t) => acc + t.amount, 0);
-
+            const savedAmount = savingsTxs.filter(t => t.category === goal.name).reduce((acc, t) => acc + t.amount, 0);
             const percentage = Math.min(100, (savedAmount / goal.targetAmount) * 100);
             const today = new Date();
             const targetDate = new Date(goal.targetMonth + "-01");
@@ -734,38 +760,29 @@
             let recommendationText = "";
             let remainingToSave = Math.max(0, goal.targetAmount - savedAmount);
 
-            if (remainingToSave === 0) {
-                recommendationText = "🎉 היעד הושלם בהצלחה!";
-            } else if (monthsLeft <= 0) {
-                recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
-            } else {
+            if (remainingToSave === 0) { recommendationText = "🎉 היעד הושלם בהצלחה!"; }
+            else if (monthsLeft <= 0) { recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`; }
+            else {
                 const monthlyRequired = remainingToSave / monthsLeft;
                 recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ${currencySymbol}${monthlyRequired.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
             }
 
             const displayMonth = targetDate.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
-
             const card = document.createElement('div');
             card.className = 'smart-goal-card';
             card.innerHTML = `
                 <div class="goal-header">
-                    <div>
-                        <div class="goal-title">${goal.name}</div>
-                        <div class="goal-target-date">יעד: ${displayMonth}</div>
-                    </div>
+                    <div><div class="goal-title">${goal.name}</div><div class="goal-target-date">יעד: ${displayMonth}</div></div>
                     <button class="delete-btn" onclick="deleteSmartGoal(${goal.id})"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="goal-stats">
                     <span class="goal-saved">${currencySymbol}${savedAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
                     <span class="goal-target">מתוך ${currencySymbol}${goal.targetAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
                 </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill"></div>
-                </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
                 <div class="monthly-recommendation">${recommendationText}</div>
             `;
             container.appendChild(card);
-
             setTimeout(() => {
                 const fill = card.querySelector('.progress-bar-fill');
                 if(fill) fill.style.width = `${percentage}%`;
@@ -781,15 +798,9 @@
         item.style.animationDelay = `${index * 0.05}s`;
 
         item.innerHTML = `
-            <div class="details">
-                <span class="date">${displayDate}</span>
-                <strong>${transaction.text}</strong>
-                <span class="category">${transaction.category}</span>
-            </div>
-            <div class="amount-controls">
-                <span>${sign}${currencySymbol}${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                <button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button>
-            </div>
+            <div class="details"><span class="date">${displayDate}</span><strong>${transaction.text}</strong><span class="category">${transaction.category}</span></div>
+            <div class="amount-controls"><span>${sign}${currencySymbol}${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            <button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button></div>
         `;
         list.appendChild(item);
     }
@@ -810,7 +821,6 @@
         savingsTotalUI.setAttribute('data-val', savingsTotal);
         income.setAttribute('data-val', incomeTotal);
         expense.setAttribute('data-val', expenseTotal);
-
         fetchBalance();
     }
 
@@ -841,20 +851,14 @@
                 animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' },
                 plugins: {
                     legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } },
-                    // הוספת פילטר שמשנה את הטקסט שקופץ בריחוף
                     tooltip: {
                         callbacks: {
                             label: function(context) {
                                 let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
+                                if (label) label += ': ';
                                 const value = context.parsed;
-                                // חישוב סך כל ההוצאות בגרף כדי למצוא את האחוז
                                 const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
                                 const percentage = ((value / total) * 100).toFixed(1) + '%';
-
-                                // הרכבת הטקסט הסופי: סמל המטבע + סכום עם פסיקים + אחוז בסוגריים
                                 label += currencySymbol + value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                                 label += ' (' + percentage + ')';
                                 return label;
@@ -868,7 +872,10 @@
     }
 
     function exportToCSV() {
-        if (transactions.length === 0) return alert("אין נתונים");
+        if (transactions.length === 0) {
+            showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.');
+            return;
+        }
         let csvContent = "data:text/csv;charset=utf-8,\uFEFFתאריך,סוג,קטגוריה,תיאור,סכום\n";
         transactions.forEach(t => {
             const date = new Date(t.date).toLocaleDateString('he-IL');

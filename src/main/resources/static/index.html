@@ -660,9 +660,7 @@
     const GOALS_API_URL = '/api/goals';
     const ACCOUNT_API_URL = '/api/account';
 
-    // בגלל שעוד לא סיימת את קוד ה-Java, אנחנו משתמשים במשתנים המקומיים כברירת מחדל
-    // ברגע שהשרת יתמוך בזה - הוא ידרוס אותם ויסנכרן את הכל
-    let currentUsername = 'אורח';
+    let currentUsername = localStorage.getItem('budgetAppUsername') || 'אורח';
     let profileData = {
         profilePic: '',
         xp: 0,
@@ -670,6 +668,14 @@
         lastLogin: '',
         badges: []
     };
+
+    // טעינה מיידית של נתונים מהזיכרון כדי למנוע הבהובים!
+    if (currentUsername !== 'אורח') {
+        const localData = localStorage.getItem('budgetAppProfileData_' + currentUsername);
+        if (localData) {
+            profileData = JSON.parse(localData);
+        }
+    }
 
     function loadProfileUI() {
         document.getElementById('user-name-display').innerHTML = `${currentUsername} <i class="fas fa-hand-sparkles"></i>`;
@@ -681,9 +687,19 @@
         }
     }
 
-    /* פונקציית סנכרון לשרת (תעבוד כשתוסיף את הנתיב ב-Java) */
-    async function syncProfileToServer() {
-        if(currentUsername === 'אורח') return;
+    // ציור הממשק ישר עם פתיחת העמוד
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProfileUI();
+    });
+
+    /* פונקציית שמירה אלימה - קודם כל שומרת בדפדפן ואז מנסה לשלוח לשרת */
+    async function saveProfileData() {
+        if(currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
+
+        // 1. שמירה תמיד בזיכרון המקומי ככה שהכל מוגן מחיקה
+        localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
+
+        // 2. ניסיון שקוף לשלוח לשרת שלך (בלי לזרוק שגיאות אם השרת לא מוגדר עדיין)
         try {
             await fetch('/api/account/profile', {
                 method: 'POST',
@@ -691,8 +707,7 @@
                 body: JSON.stringify(profileData)
             });
         } catch(e) {
-            // אם השרת עדיין לא תומך, שומרים מקומית כדי שהאתר ימשיך לעבוד לך בינתיים
-            localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
+            // מתעלמים משגיאות חיבור, המידע כבר מוגן בדפדפן
         }
     }
 
@@ -700,7 +715,7 @@
         const seed = Math.random().toString(36).substring(7);
         profileData.profilePic = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
         loadProfileUI();
-        syncProfileToServer();
+        saveProfileData(); // שמירה
     }
 
     function handleProfileUpload(event) {
@@ -710,7 +725,7 @@
             reader.onload = function(e) {
                 profileData.profilePic = e.target.result;
                 loadProfileUI();
-                syncProfileToServer();
+                saveProfileData(); // שמירה
             };
             reader.readAsDataURL(file);
         }
@@ -773,7 +788,7 @@
     });
 
     function updateGamingStats(addXP = 0) {
-        if (currentUsername === 'אורח') return;
+        if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
 
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
@@ -799,7 +814,7 @@
             profileData.lastLogin = todayStr;
         }
 
-        syncProfileToServer();
+        saveProfileData(); // שמירה
 
         const currentLevel = Math.floor(profileData.xp / 100) + 1;
         const xpIntoLevel = profileData.xp % 100;
@@ -836,7 +851,8 @@
     ];
 
     function renderBadges() {
-        if (currentUsername === 'אורח') return;
+        if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
+
         const cabinet = document.getElementById('badges-cabinet');
         cabinet.innerHTML = '';
 
@@ -863,7 +879,7 @@
             cabinet.appendChild(el);
         });
 
-        if (newlyUnlocked) syncProfileToServer();
+        if (newlyUnlocked) saveProfileData(); // שמירה
         justFinishedGoal = false;
     }
 
@@ -1035,20 +1051,17 @@
             if(res.ok) {
                 const acc = await res.json();
 
-                // עדכון משתמש והגדרות משחק
+                // עדכון משתמש רק במידה וזה לא אורח
                 if (acc.username && acc.username !== 'אורח') {
                     currentUsername = acc.username;
 
                     // מנסה למשוך נתונים מהשרת. אם אין, משתמש בגיבוי המקומי
-                    if (acc.xp !== undefined) {
+                    if (acc.xp !== undefined && acc.xp > 0) {
                         profileData.xp = acc.xp;
                         profileData.streak = acc.streak;
                         profileData.lastLogin = acc.lastLogin;
                         profileData.badges = acc.badges ? acc.badges.split(',').filter(b=>b) : [];
                         if(acc.profilePic) profileData.profilePic = acc.profilePic;
-                    } else {
-                        const localData = localStorage.getItem('budgetAppProfileData_' + currentUsername);
-                        if(localData) profileData = JSON.parse(localData);
                     }
 
                     loadProfileUI();

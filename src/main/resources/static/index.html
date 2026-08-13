@@ -30,7 +30,6 @@
             position: relative;
         }
 
-        /* --- התיקון לאייפון: שכבת רקע מקובעת ונפרדת --- */
         body::before {
             content: '';
             position: fixed;
@@ -42,7 +41,6 @@
             z-index: -2;
         }
 
-        /* --- רקע פיננסי מרחף --- */
         .floating-bg-icons {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -62,7 +60,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- מערכת התראות (Toast) --- */
         .custom-alert {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px);
             background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(239, 68, 68, 0.3);
@@ -83,7 +80,6 @@
         .alert-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; transition: color 0.2s; padding: 5px; }
         .alert-close:hover { color: white; }
 
-        /* --- מערכת אישור מחיקה (Modal Confirm) --- */
         .confirm-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(8px);
@@ -198,7 +194,6 @@
             background-size: 16px; padding-left: 40px; cursor: pointer;
         }
 
-        /* --- עיצוב לבחירת תאריך מותאמת אישית עם ריבועים שווים --- */
         .custom-date-picker-wrapper { position: relative; width: 100%; }
         .date-trigger {
             width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.1);
@@ -254,7 +249,6 @@
         button.submit-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); filter: brightness(1.1); }
         button.submit-btn:active { transform: translateY(1px) scale(0.98); }
 
-        /* --- עיצוב כפתור הזהב לסיום היעד --- */
         .finish-goal-btn {
             width: 100%; padding: 12px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             color: white; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 800;
@@ -331,20 +325,15 @@
         .add-goal-form { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 20px;}
         .add-goal-form h3 { margin: 0 0 15px 0; font-size: 1rem; color: var(--text-muted); }
 
-        /* --- רספונסיביות (התאמה למובייל) --- */
         @media (max-width: 768px) {
             .top-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .top-controls .control-box, .top-controls .export-btn { width: 100%; justify-content: center; }
-
             .dashboard { grid-template-columns: 1fr 1fr; }
-
             .form-row { flex-direction: column; gap: 15px; }
             .form-group { width: 100%; max-width: 100% !important; }
-
             .list li { flex-direction: column; align-items: flex-start; gap: 12px; }
             .amount-controls { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
             .amount-controls span { font-size: 1.2rem; }
-
             .smart-goals-container { grid-template-columns: 1fr; }
         }
 
@@ -359,9 +348,8 @@
 </head>
 <body>
 
-<!-- חלונית התראה (Toast) לשגיאות -->
 <div id="custom-alert" class="custom-alert">
-    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+    <div id="alert-icon-wrapper" class="alert-icon"><i id="alert-icon-class" class="fas fa-exclamation-circle"></i></div>
     <div class="alert-content">
         <div id="alert-title" class="alert-title">שגיאה</div>
         <div id="alert-message" class="alert-message">הודעת שגיאה כללית</div>
@@ -369,7 +357,6 @@
     <button class="alert-close" onclick="closeCustomAlert()"><i class="fas fa-times"></i></button>
 </div>
 
-<!-- חלונית אישור מחיקה (Modal Confirm) -->
 <div id="confirm-overlay" class="confirm-overlay">
     <div class="confirm-modal">
         <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
@@ -567,6 +554,7 @@
     const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
     const deleteSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3');
     const jackpotSound = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
+    const tickAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
 
     incomeSound.volume = 0.5;
     expenseSound.volume = 0.4;
@@ -575,6 +563,7 @@
     errorSound.volume = 0.8;
     deleteSound.volume = 0.5;
     jackpotSound.volume = 0.7;
+    tickAudio.volume = 0.15;
 
     let alertTimeout;
     function showCustomAlert(title, message, isSuccess = false) {
@@ -586,10 +575,11 @@
 
         if (isSuccess) {
             alertEl.classList.add('success');
-            iconClass.className = 'fas fa-check-circle';
+            if(iconClass) iconClass.className = 'fas fa-check-circle';
         } else {
             alertEl.classList.remove('success');
-            iconClass.className = 'fas fa-exclamation-circle';
+            if(iconClass) iconClass.className = 'fas fa-exclamation-circle';
+            // סאונד שגיאה מופעל כאן בוודאות בכל קפיצה של הודעה אדומה
             errorSound.currentTime = 0;
             errorSound.play().catch(e => console.log('Audio error:', e));
         }
@@ -681,7 +671,7 @@
         currencySymbol = currentCurrency === 'ILS' ? '₪' : '$';
         localStorage.setItem('budgetAppCurrency', currentCurrency);
         renderUI();
-        fetchBalance();
+        fetchBalance(true, false);
     }
 
     function formatInputLive(e) {
@@ -742,21 +732,39 @@
         }
     });
 
-    function animateValue(obj, start, end, duration) {
+    function animateValue(obj, start, end, duration, playSound = false) {
         let startTimestamp = null;
+        let lastTick = 0;
+        const isCountingUp = end > start;
+
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+            // השמעת סאונד תקתוק מהיר
+            if (playSound && progress < 1 && (timestamp - lastTick > 60)) {
+                tickAudio.currentTime = 0;
+                tickAudio.play().catch(e => {});
+                lastTick = timestamp;
+            }
+
             const easeProgress = 1 - Math.pow(1 - progress, 4);
-            const current = progress * (end - start) + start;
+            const current = easeProgress * (end - start) + start;
 
             let sign = current < 0 ? '-' : '';
             obj.innerText = sign + currencySymbol + Math.abs(current).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-            if (progress < 1) { window.requestAnimationFrame(step); }
-            else {
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
                 let finalSign = end < 0 ? '-' : '';
                 obj.innerText = finalSign + currencySymbol + Math.abs(end).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                // סיום חגיגי אם העו"ש עלה
+                if (playSound && isCountingUp && (end - start) > 0) {
+                    incomeSound.currentTime = 0;
+                    incomeSound.play().catch(e => {});
+                }
             }
         };
         window.requestAnimationFrame(step);
@@ -772,11 +780,11 @@
             handleTypeChange();
             populateMonthsDropdown();
             renderUI();
-            fetchBalance(true);
+            fetchBalance(true, false);
         } catch (error) { console.error(error); }
     }
 
-    async function fetchBalance(animate = true) {
+    async function fetchBalance(animate = true, playSound = false) {
         try {
             const res = await fetch(ACCOUNT_API_URL);
             if(res.ok) {
@@ -790,7 +798,7 @@
                 balanceUI.style.display = 'inline-block';
 
                 if (animate && oldBal !== newBal) {
-                    animateValue(balanceUI, oldBal, newBal, 1500);
+                    animateValue(balanceUI, oldBal, newBal, 1500, playSound);
                 } else {
                     let sign = newBal < 0 ? '-' : '';
                     balanceUI.innerText = sign + currencySymbol + Math.abs(newBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -804,15 +812,15 @@
         let cleanVal = textValue.replace(/[^0-9.]/g, '');
 
         if (cleanVal === '') {
-            fetchBalance(false);
+            fetchBalance(false, false);
             return;
         }
 
         let newBalance = parseFloat(cleanVal);
 
         if(isNaN(newBalance)) {
-            showCustomAlert('שגיאת הקלדה', 'נא להזין מספר תקין בעו"ש.');
-            fetchBalance();
+            showCustomAlert('שגיאת הקלדה', 'נא להזין מספר תקין בעו"ש.', false);
+            fetchBalance(false, false);
             return;
         }
 
@@ -823,7 +831,7 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newBalance)
             });
-            if(res.ok) fetchBalance();
+            if(res.ok) fetchBalance(true, true);
         } catch (e) { console.error(e); }
     }
 
@@ -834,12 +842,12 @@
         const targetMonth = document.getElementById('goal-date').value;
 
         if (isNaN(targetAmount) || targetAmount <= 0) {
-            showCustomAlert('שגיאה', 'נא להזין סכום תקין.');
+            showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false);
             return;
         }
 
         if (smartGoals.some(g => g.name === name)) {
-            showCustomAlert('שם יעד תפוס', 'כבר קיים יעד חכם עם השם הזה. אנא בחר שם ייחודי כדי שנוכל לעקוב אחריו כראוי.');
+            showCustomAlert('שם יעד תפוס', 'כבר קיים יעד חכם עם השם הזה. אנא בחר שם ייחודי כדי שנוכל לעקוב אחריו כראוי.', false);
             return;
         }
 
@@ -885,7 +893,7 @@
                     handleTypeChange();
                     populateMonthsDropdown();
                     renderUI();
-                    fetchBalance(true);
+                    fetchBalance(true, true);
                     showCustomAlert('אלוף!', 'היעד הושלם בהצלחה והכסף חזר לעו"ש.', true);
                 }
             } catch (error) { console.error(error); }
@@ -913,7 +921,7 @@
                     handleTypeChange();
                     populateMonthsDropdown();
                     renderUI();
-                    fetchBalance(true);
+                    fetchBalance(true, true);
                 }
             } catch (error) { console.error(error); }
         });
@@ -951,13 +959,13 @@
         const txAmount = parseFloat(amount.value.replace(/,/g, ''));
 
         if (isNaN(txAmount) || txAmount <= 0) {
-            showCustomAlert('שגיאה', 'נא להזין סכום תקין.');
+            showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false);
             return;
         }
 
         if (txTypeRaw === 'withdrawal') {
             if (!category.value || category.value === '') {
-                showCustomAlert('שגיאה ביעד', 'אנא בחר יעד חכם למשוך ממנו.');
+                showCustomAlert('שגיאה ביעד', 'אנא בחר יעד חכם למשוך ממנו.', false);
                 return;
             }
 
@@ -966,17 +974,17 @@
             const currentSavedInGoal = savedAmountRaw - withdrawAmount;
 
             if (txAmount > currentSavedInGoal) {
-                showCustomAlert('חריגה ממשיכה', `לא ניתן למשוך סכום זה.\nביעד "${category.value}" יש כרגע רק ${currencySymbol}${currentSavedInGoal.toLocaleString('en-US')}.`);
+                showCustomAlert('חריגה ממשיכה', `לא ניתן למשוך סכום זה.\nביעד "${category.value}" יש כרגע רק ${currencySymbol}${currentSavedInGoal.toLocaleString('en-US')}.`, false);
                 return;
             }
         }
         else if (txTypeRaw === 'savings') {
             if (!category.value || category.value === '') {
-                showCustomAlert('שגיאה ביעד', 'אנא צור יעד חיסכון קודם באזור "יעדים חכמים".');
+                showCustomAlert('שגיאה ביעד', 'אנא צור יעד חיסכון קודם באזור "יעדים חכמים".', false);
                 return;
             }
             if (txAmount > currentBalanceAmount) {
-                showCustomAlert('חריגה מהתקציב', `לא ניתן להעביר לחיסכון.\nהסכום המבוקש (${currencySymbol}${txAmount.toLocaleString('en-US')}) גדול מהיתרה בעו"ש (${currencySymbol}${currentBalanceAmount.toLocaleString('en-US')}).`);
+                showCustomAlert('חריגה מהתקציב', `אין מספיק כסף בעו"ש כדי להפקיד את הסכום הזה לחיסכון!\nהסכום המבוקש (${currencySymbol}${txAmount.toLocaleString('en-US')}) גדול מהיתרה הפנויה (${currencySymbol}${currentBalanceAmount.toLocaleString('en-US')}).`, false);
                 return;
             }
         }
@@ -1015,7 +1023,7 @@
                 text.value = ''; amount.value = '';
                 populateMonthsDropdown();
                 renderUI();
-                fetchBalance(true);
+                fetchBalance(true, true);
             }
         } catch (error) { console.error(error); }
     }
@@ -1034,7 +1042,7 @@
                 .reduce((acc, t) => acc + t.amount, 0);
 
             if (totalWithdrawalsInGoal > remainingSavingsInGoal) {
-                showCustomAlert('שגיאת מחיקה', `לא ניתן למחוק הפקדה זו.\nכבר בוצעו משיכות מהיעד "${goalName}" בסך ${currencySymbol}${totalWithdrawalsInGoal.toLocaleString('en-US')}, ולכן מחיקת ההפקדה תכניס את החיסכון למינוס.`);
+                showCustomAlert('שגיאת מחיקה', `לא ניתן למחוק הפקדה זו.\nכבר בוצעו משיכות מהיעד "${goalName}" בסך ${currencySymbol}${totalWithdrawalsInGoal.toLocaleString('en-US')}, ולכן מחיקת ההפקדה תכניס את החיסכון למינוס.`, false);
                 return;
             }
         }
@@ -1047,7 +1055,7 @@
                     transactions = transactions.filter(t => t.id !== id);
                     populateMonthsDropdown();
                     renderUI();
-                    fetchBalance(true);
+                    fetchBalance(true, true);
                 }
             } catch (error) { console.error(error); }
         });
@@ -1204,9 +1212,9 @@
         const oldIncome = parseFloat(income.getAttribute('data-val'));
         const oldExpense = parseFloat(expense.getAttribute('data-val'));
 
-        animateValue(savingsTotalUI, oldSavings, savingsTotal, 1500);
-        animateValue(income, oldIncome, incomeTotal, 1500);
-        animateValue(expense, oldExpense, expenseTotal, 1500);
+        animateValue(savingsTotalUI, oldSavings, savingsTotal, 1500, false);
+        animateValue(income, oldIncome, incomeTotal, 1500, false);
+        animateValue(expense, oldExpense, expenseTotal, 1500, false);
 
         savingsTotalUI.setAttribute('data-val', savingsTotal);
         income.setAttribute('data-val', incomeTotal);
@@ -1262,7 +1270,7 @@
 
     function exportToCSV() {
         if (transactions.length === 0) {
-            showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.');
+            showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.', false);
             return;
         }
         let csvContent = "data:text/csv;charset=utf-8,\uFEFFתאריך,סוג,קטגוריה,תיאור,סכום\n";

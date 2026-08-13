@@ -839,7 +839,29 @@
             options: {
                 responsive: true, maintainAspectRatio: false,
                 animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' },
-                plugins: { legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } } },
+                plugins: {
+                    legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } },
+                    // הוספת פילטר שמשנה את הטקסט שקופץ בריחוף
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                const value = context.parsed;
+                                // חישוב סך כל ההוצאות בגרף כדי למצוא את האחוז
+                                const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
+                                const percentage = ((value / total) * 100).toFixed(1) + '%';
+
+                                // הרכבת הטקסט הסופי: סמל המטבע + סכום עם פסיקים + אחוז בסוגריים
+                                label += currencySymbol + value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                label += ' (' + percentage + ')';
+                                return label;
+                            }
+                        }
+                    }
+                },
                 cutout: '65%'
             }
         });

@@ -477,7 +477,6 @@
             <div class="greeting">ברוך שובך לאתר,</div>
             <div class="user-name" id="user-name-display">טוען... <i class="fas fa-hand-sparkles"></i></div>
 
-            <!-- מערכת רמות וסטריקים -->
             <div class="gaming-stats">
                 <div class="stat-pill" title="רצף ימים שנכנסת למערכת">
                     <i class="fas fa-fire fire"></i> <span id="streak-counter">0 ימים</span>
@@ -638,52 +637,70 @@
         document.body.appendChild(bgContainer);
 
         const icons = ['fa-coins', 'fa-wallet', 'fa-chart-line', 'fa-piggy-bank', 'fa-credit-card', 'fa-money-bill-wave', 'fa-sack-dollar', 'fa-vault', 'fa-file-invoice-dollar', 'fa-chart-pie'];
-        const numIcons = 22;
-
-        for (let i = 0; i < numIcons; i++) {
+        for (let i = 0; i < 22; i++) {
             const icon = document.createElement('i');
-            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-            icon.className = `fas ${randomIcon}`;
-
+            icon.className = `fas ${icons[Math.floor(Math.random() * icons.length)]}`;
             const size = Math.random() * 100 + 80;
-
             let left, top;
             const region = Math.random();
             if (region < 0.4) { left = Math.random() * 20; top = Math.random() * 100; }
             else if (region < 0.8) { left = 80 + Math.random() * 20; top = Math.random() * 100; }
             else if (region < 0.9) { left = Math.random() * 100; top = Math.random() * 15; }
             else { left = Math.random() * 100; top = 85 + Math.random() * 15; }
-
             const duration = Math.random() * 40 + 60;
             const delay = Math.random() * 20;
             const opacity = Math.random() * 0.02 + 0.015;
-
-            icon.style.cssText = `
-                position: absolute; left: ${left}%; top: ${top}%; font-size: ${size}px;
-                color: rgba(147, 197, 253, ${opacity});
-                animation: float-finance-icon ${duration}s infinite ease-in-out; animation-delay: -${delay}s;
-            `;
+            icon.style.cssText = `position: absolute; left: ${left}%; top: ${top}%; font-size: ${size}px; color: rgba(147, 197, 253, ${opacity}); animation: float-finance-icon ${duration}s infinite ease-in-out; animation-delay: -${delay}s;`;
             bgContainer.appendChild(icon);
         }
     }
     createBackgroundIcons();
 
-    let currentUsername = 'אורח';
+    const API_URL = '/api/transactions';
+    const GOALS_API_URL = '/api/goals';
+    const ACCOUNT_API_URL = '/api/account';
 
-    function loadProfilePic(username) {
-        const savedPic = localStorage.getItem('budgetAppProfilePic_' + username);
-        if (savedPic) {
-            document.getElementById('profile-img').src = savedPic;
+    // בגלל שעוד לא סיימת את קוד ה-Java, אנחנו משתמשים במשתנים המקומיים כברירת מחדל
+    // ברגע שהשרת יתמוך בזה - הוא ידרוס אותם ויסנכרן את הכל
+    let currentUsername = 'אורח';
+    let profileData = {
+        profilePic: '',
+        xp: 0,
+        streak: 0,
+        lastLogin: '',
+        badges: []
+    };
+
+    function loadProfileUI() {
+        document.getElementById('user-name-display').innerHTML = `${currentUsername} <i class="fas fa-hand-sparkles"></i>`;
+
+        if (profileData.profilePic) {
+            document.getElementById('profile-img').src = profileData.profilePic;
         } else {
-            document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${username}`;
+            document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${currentUsername}`;
+        }
+    }
+
+    /* פונקציית סנכרון לשרת (תעבוד כשתוסיף את הנתיב ב-Java) */
+    async function syncProfileToServer() {
+        if(currentUsername === 'אורח') return;
+        try {
+            await fetch('/api/account/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(profileData)
+            });
+        } catch(e) {
+            // אם השרת עדיין לא תומך, שומרים מקומית כדי שהאתר ימשיך לעבוד לך בינתיים
+            localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
         }
     }
 
     function generateRandomAvatar() {
         const seed = Math.random().toString(36).substring(7);
-        const url = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
-        document.getElementById('profile-img').src = url;
-        localStorage.setItem('budgetAppProfilePic_' + currentUsername, url);
+        profileData.profilePic = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+        loadProfileUI();
+        syncProfileToServer();
     }
 
     function handleProfileUpload(event) {
@@ -691,17 +708,13 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const base64Img = e.target.result;
-                document.getElementById('profile-img').src = base64Img;
-                localStorage.setItem('budgetAppProfilePic_' + currentUsername, base64Img);
+                profileData.profilePic = e.target.result;
+                loadProfileUI();
+                syncProfileToServer();
             };
             reader.readAsDataURL(file);
         }
     }
-
-    const API_URL = '/api/transactions';
-    const GOALS_API_URL = '/api/goals';
-    const ACCOUNT_API_URL = '/api/account';
 
     const incomeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
     const expenseSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
@@ -713,43 +726,31 @@
     const tickAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
     const badgeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
 
-    incomeSound.volume = 0.5;
-    expenseSound.volume = 0.4;
-    savingsSound.volume = 0.5;
-    goalSound.volume = 0.6;
-    errorSound.volume = 0.8;
-    deleteSound.volume = 0.5;
-    jackpotSound.volume = 0.7;
-    tickAudio.volume = 0.15;
-    badgeSound.volume = 0.8;
+    incomeSound.volume = 0.5; expenseSound.volume = 0.4; savingsSound.volume = 0.5;
+    goalSound.volume = 0.6; errorSound.volume = 0.8; deleteSound.volume = 0.5;
+    jackpotSound.volume = 0.7; tickAudio.volume = 0.15; badgeSound.volume = 0.8;
 
     let alertTimeout;
     function showCustomAlert(title, message, isSuccess = false, isBadge = false) {
         const alertEl = document.getElementById('custom-alert');
         const iconClass = document.getElementById('alert-icon-class');
-
-        document.getElementById('alert-title').innerText = title;
-        document.getElementById('alert-message').innerText = message;
-
         alertEl.classList.remove('success', 'badge-alert');
 
         if (isBadge) {
             alertEl.classList.add('badge-alert');
             if(iconClass) iconClass.className = 'fas fa-trophy';
-            badgeSound.currentTime = 0;
-            badgeSound.play().catch(e => console.log('Audio error:', e));
+            badgeSound.currentTime = 0; badgeSound.play().catch(e => {});
         } else if (isSuccess) {
             alertEl.classList.add('success');
             if(iconClass) iconClass.className = 'fas fa-check-circle';
         } else {
             if(iconClass) iconClass.className = 'fas fa-exclamation-circle';
-            errorSound.currentTime = 0;
-            errorSound.play().catch(e => console.log('Audio error:', e));
+            errorSound.currentTime = 0; errorSound.play().catch(e => {});
         }
 
         alertEl.classList.add('show');
         clearTimeout(alertTimeout);
-        alertTimeout = setTimeout(() => { closeCustomAlert(); }, 4500);
+        alertTimeout = setTimeout(() => { alertEl.classList.remove('show'); }, 4500);
     }
 
     function closeCustomAlert() { document.getElementById('custom-alert').classList.remove('show'); }
@@ -771,59 +772,45 @@
         closeCustomConfirm();
     });
 
-    /* --- מערכת רמות ורצף אש (Level & Streak) --- */
     function updateGamingStats(addXP = 0) {
-        if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
+        if (currentUsername === 'אורח') return;
 
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
 
-        let lastLogin = localStorage.getItem('budgetAppLastLogin_' + currentUsername);
-        let streak = parseInt(localStorage.getItem('budgetAppStreak_' + currentUsername)) || 0;
-        let xp = parseInt(localStorage.getItem('budgetAppXP_' + currentUsername)) || 0;
+        if (addXP > 0) profileData.xp += addXP;
 
-        // הוספת XP ידנית (כמו בעת הוספת פעולה)
-        if (addXP > 0) {
-            xp += addXP;
-            localStorage.setItem('budgetAppXP_' + currentUsername, xp);
-        }
-
-        // בדיקת רצף וכניסה יומית
-        if (lastLogin !== todayStr) {
-            if (lastLogin) {
+        if (profileData.lastLogin !== todayStr) {
+            if (profileData.lastLogin) {
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-                if (lastLogin === yesterdayStr) {
-                    streak++;
+                if (profileData.lastLogin === yesterdayStr) {
+                    profileData.streak++;
                 } else {
-                    streak = 1;
+                    profileData.streak = 1;
                 }
             } else {
-                streak = 1;
+                profileData.streak = 1;
             }
 
-            xp += 20; // בונוס של 20 XP על כניסה ראשונה ביום
-            localStorage.setItem('budgetAppLastLogin_' + currentUsername, todayStr);
-            localStorage.setItem('budgetAppStreak_' + currentUsername, streak);
-            localStorage.setItem('budgetAppXP_' + currentUsername, xp);
+            profileData.xp += 20;
+            profileData.lastLogin = todayStr;
         }
 
-        const currentLevel = Math.floor(xp / 100) + 1;
-        const xpIntoLevel = xp % 100;
+        syncProfileToServer();
 
-        document.getElementById('streak-counter').innerText = `${streak} ימים`;
+        const currentLevel = Math.floor(profileData.xp / 100) + 1;
+        const xpIntoLevel = profileData.xp % 100;
+
+        document.getElementById('streak-counter').innerText = `${profileData.streak} ימים`;
         document.getElementById('level-counter').innerText = currentLevel;
         document.getElementById('xp-text').innerText = `${xpIntoLevel}/100 XP`;
 
-        setTimeout(() => {
-            document.getElementById('level-progress').style.width = `${xpIntoLevel}%`;
-        }, 300);
+        setTimeout(() => { document.getElementById('level-progress').style.width = `${xpIntoLevel}%`; }, 300);
     }
 
-
-    /* --- מערכת מדליות מתוקנת --- */
     let justFinishedGoal = false;
 
     function checkMasterCoin() {
@@ -849,16 +836,14 @@
     ];
 
     function renderBadges() {
-        if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
-
+        if (currentUsername === 'אורח') return;
         const cabinet = document.getElementById('badges-cabinet');
         cabinet.innerHTML = '';
 
-        let unlockedBadgesHistory = JSON.parse(localStorage.getItem('budgetAppBadges_' + currentUsername)) || [];
         let newlyUnlocked = false;
 
         BADGES.forEach(badge => {
-            const previouslyUnlocked = unlockedBadgesHistory.includes(badge.id);
+            const previouslyUnlocked = profileData.badges.includes(badge.id);
             const meetsCondition = badge.check();
             const isUnlocked = previouslyUnlocked || meetsCondition;
 
@@ -870,7 +855,7 @@
                 el.classList.add('unlocked', badge.colorClass);
                 if (!previouslyUnlocked) {
                     el.classList.add('just-unlocked');
-                    unlockedBadgesHistory.push(badge.id);
+                    profileData.badges.push(badge.id);
                     newlyUnlocked = true;
                     setTimeout(() => showCustomAlert('הישג חדש נפתח!', `השגת את המדליה: ${badge.name} 🏆`, false, true), 1000);
                 }
@@ -878,10 +863,7 @@
             cabinet.appendChild(el);
         });
 
-        if (newlyUnlocked) {
-            localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(unlockedBadgesHistory));
-        }
-
+        if (newlyUnlocked) syncProfileToServer();
         justFinishedGoal = false;
     }
 
@@ -980,7 +962,6 @@
         let originalText = this.innerText;
         let isNegative = originalText.includes('-');
         let cleanVal = originalText.replace(/[^0-9.]/g, '');
-
         let parts = cleanVal.split('.');
         if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
         if (parts[0]) {
@@ -988,13 +969,9 @@
             if (!isNaN(num)) parts[0] = num.toLocaleString('en-US');
             else parts[0] = '';
         }
-
         let finalVal = '';
-        if (cleanVal === '' && isNegative) {
-            finalVal = '-';
-        } else {
-            finalVal = (isNegative ? '-' : '') + parts.join('.');
-        }
+        if (cleanVal === '' && isNegative) finalVal = '-';
+        else finalVal = (isNegative ? '-' : '') + parts.join('.');
 
         if (originalText !== finalVal) {
             this.innerText = finalVal;
@@ -1017,16 +994,11 @@
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
             if (playSound && progress < 1 && (timestamp - lastTick > 60)) {
-                tickAudio.currentTime = 0;
-                tickAudio.play().catch(e => {});
-                lastTick = timestamp;
+                tickAudio.currentTime = 0; tickAudio.play().catch(e => {}); lastTick = timestamp;
             }
-
             const easeProgress = 1 - Math.pow(1 - progress, 4);
             const current = easeProgress * (end - start) + start;
-
             let sign = current < 0 ? '-' : '';
             obj.innerText = sign + currencySymbol + Math.abs(current).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
@@ -1035,10 +1007,8 @@
             } else {
                 let finalSign = end < 0 ? '-' : '';
                 obj.innerText = finalSign + currencySymbol + Math.abs(end).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-
                 if (playSound && isCountingUp && (end - start) > 0) {
-                    incomeSound.currentTime = 0;
-                    incomeSound.play().catch(e => {});
+                    incomeSound.currentTime = 0; incomeSound.play().catch(e => {});
                 }
             }
         };
@@ -1065,20 +1035,31 @@
             if(res.ok) {
                 const acc = await res.json();
 
-                if (acc.username && acc.username !== currentUsername) {
+                // עדכון משתמש והגדרות משחק
+                if (acc.username && acc.username !== 'אורח') {
                     currentUsername = acc.username;
-                    document.getElementById('user-name-display').innerHTML = `${currentUsername} <i class="fas fa-hand-sparkles"></i>`;
-                    loadProfilePic(currentUsername);
+
+                    // מנסה למשוך נתונים מהשרת. אם אין, משתמש בגיבוי המקומי
+                    if (acc.xp !== undefined) {
+                        profileData.xp = acc.xp;
+                        profileData.streak = acc.streak;
+                        profileData.lastLogin = acc.lastLogin;
+                        profileData.badges = acc.badges ? acc.badges.split(',').filter(b=>b) : [];
+                        if(acc.profilePic) profileData.profilePic = acc.profilePic;
+                    } else {
+                        const localData = localStorage.getItem('budgetAppProfileData_' + currentUsername);
+                        if(localData) profileData = JSON.parse(localData);
+                    }
+
+                    loadProfileUI();
                 }
 
-                // עדכון מד ה-XP והסטריק
                 updateGamingStats(0);
 
                 let newBal = acc.balance || 0;
                 let oldBal = currentBalanceAmount || 0;
 
                 currentBalanceAmount = newBal;
-
                 balanceUI.style.direction = 'ltr';
                 balanceUI.style.display = 'inline-block';
 
@@ -1088,7 +1069,6 @@
                     let sign = newBal < 0 ? '-' : '';
                     balanceUI.innerText = sign + currencySymbol + Math.abs(newBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 }
-
                 renderBadges();
             }
         } catch (e) { console.error(e); }
@@ -1097,20 +1077,10 @@
     async function updateManualBalance(textValue) {
         let isNegative = textValue.includes('-');
         let cleanVal = textValue.replace(/[^0-9.]/g, '');
-
-        if (cleanVal === '') {
-            fetchBalance(false, false);
-            return;
-        }
+        if (cleanVal === '') { fetchBalance(false, false); return; }
 
         let newBalance = parseFloat(cleanVal);
-
-        if(isNaN(newBalance)) {
-            showCustomAlert('שגיאת הקלדה', 'נא להזין מספר תקין בעו"ש.', false);
-            fetchBalance(false, false);
-            return;
-        }
-
+        if(isNaN(newBalance)) { showCustomAlert('שגיאת הקלדה', 'נא להזין מספר תקין בעו"ש.', false); fetchBalance(false, false); return; }
         if(isNegative) newBalance = newBalance * -1;
 
         try {
@@ -1128,35 +1098,20 @@
         const targetAmount = parseFloat(document.getElementById('goal-amount').value.replace(/,/g, ''));
         const targetMonth = document.getElementById('goal-date').value;
 
-        if (isNaN(targetAmount) || targetAmount <= 0) {
-            showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false);
-            return;
-        }
-
-        if (smartGoals.some(g => g.name === name)) {
-            showCustomAlert('שם יעד תפוס', 'כבר קיים יעד חכם עם השם הזה. אנא בחר שם ייחודי כדי שנוכל לעקוב אחריו כראוי.', false);
-            return;
-        }
-
-        const goal = { name, targetAmount, targetMonth };
+        if (isNaN(targetAmount) || targetAmount <= 0) { showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false); return; }
+        if (smartGoals.some(g => g.name === name)) { showCustomAlert('שם יעד תפוס', 'כבר קיים יעד חכם עם השם הזה.', false); return; }
 
         try {
             const res = await fetch(GOALS_API_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(goal)
+                body: JSON.stringify({ name, targetAmount, targetMonth })
             });
             if(res.ok) {
                 goalSound.play().catch(e => {});
-                const savedGoal = await res.json();
-                smartGoals.push(savedGoal);
-
-                document.getElementById('goal-name').value = '';
-                document.getElementById('goal-amount').value = '';
-                document.getElementById('goal-date').value = '';
-                document.getElementById('date-trigger-text').innerText = 'תאריך יעד (אופציונלי)';
-
-                handleTypeChange();
-                renderUI();
+                smartGoals.push(await res.json());
+                document.getElementById('goal-name').value = ''; document.getElementById('goal-amount').value = '';
+                document.getElementById('goal-date').value = ''; document.getElementById('date-trigger-text').innerText = 'תאריך יעד (אופציונלי)';
+                handleTypeChange(); renderUI();
             }
         } catch (error) { console.error(error); }
     }
@@ -1164,28 +1119,16 @@
     async function finishGoal(goalId, goalName) {
         showCustomConfirm("כל הכבוד! 🎉", `סיימת את היעד "${goalName}"!\nהכסף שנחסך יוחזר כעת לעו"ש שלך.`, async () => {
             try {
-                const relatedTxs = transactions.filter(t =>
-                    (t.type === 'savings' && t.category === goalName) ||
-                    (t.type === 'income' && t.category === 'משיכה מ: ' + goalName)
-                );
-
+                const relatedTxs = transactions.filter(t => (t.type === 'savings' && t.category === goalName) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalName));
                 for (const tx of relatedTxs) { await fetch(`${API_URL}/${tx.id}`, { method: 'DELETE' }); }
-
                 const res = await fetch(`${GOALS_API_URL}/${goalId}`, { method: 'DELETE' });
                 if(res.ok) {
                     jackpotSound.play().catch(e => {});
                     smartGoals = smartGoals.filter(g => g.id !== goalId);
                     transactions = transactions.filter(t => !((t.type === 'savings' && t.category === goalName) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalName)));
-
                     justFinishedGoal = true;
-
-                    handleTypeChange();
-                    populateMonthsDropdown();
-                    renderUI();
-
-                    // בונוס 50 XP על סיום יעד!
+                    handleTypeChange(); populateMonthsDropdown(); renderUI();
                     updateGamingStats(50);
-
                     fetchBalance(true, true);
                     showCustomAlert('אלוף!', 'היעד הושלם בהצלחה והכסף חזר לעו"ש.', true);
                 }
@@ -1196,25 +1139,16 @@
     function deleteSmartGoal(id) {
         const goalToDelete = smartGoals.find(g => g.id === id);
         if (!goalToDelete) return;
-
         showCustomConfirm("מחיקת יעד חכם", "האם אתה בטוח שברצונך למחוק יעד זה?\nשים לב: כל הפקדות החיסכון והמשיכות שבוצעו ליעד זה יימחקו גם כן!", async () => {
             try {
-                const relatedTxs = transactions.filter(t =>
-                    (t.type === 'savings' && t.category === goalToDelete.name) ||
-                    (t.type === 'income' && t.category === 'משיכה מ: ' + goalToDelete.name)
-                );
-
+                const relatedTxs = transactions.filter(t => (t.type === 'savings' && t.category === goalToDelete.name) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalToDelete.name));
                 for (const tx of relatedTxs) { await fetch(`${API_URL}/${tx.id}`, { method: 'DELETE' }); }
-
                 const res = await fetch(`${GOALS_API_URL}/${id}`, { method: 'DELETE' });
                 if(res.ok) {
                     deleteSound.play().catch(e => {});
                     smartGoals = smartGoals.filter(g => g.id !== id);
                     transactions = transactions.filter(t => !((t.type === 'savings' && t.category === goalToDelete.name) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalToDelete.name)));
-                    handleTypeChange();
-                    populateMonthsDropdown();
-                    renderUI();
-                    fetchBalance(true, true);
+                    handleTypeChange(); populateMonthsDropdown(); renderUI(); fetchBalance(true, true);
                 }
             } catch (error) { console.error(error); }
         });
@@ -1222,27 +1156,12 @@
 
     function handleTypeChange() {
         if(type.value === 'savings' || type.value === 'withdrawal') {
-            if (smartGoals.length === 0) {
-                category.innerHTML = '<option value="" disabled selected>אין יעדים מוגדרים, צור יעד למעלה</option>';
-            } else {
-                category.innerHTML = smartGoals.map(g => `<option value="${g.name}">🎯 ${g.name}</option>`).join('');
-            }
+            if (smartGoals.length === 0) category.innerHTML = '<option value="" disabled selected>אין יעדים מוגדרים, צור יעד למעלה</option>';
+            else category.innerHTML = smartGoals.map(g => `<option value="${g.name}">🎯 ${g.name}</option>`).join('');
         } else if (type.value === 'income') {
-            category.innerHTML = `
-                <option value="💰 משכורת">💰 משכורת</option>
-                <option value="🛵 משלוחים / טיפים">🛵 משלוחים / טיפים</option>
-                <option value="שונות">שונות</option>
-            `;
+            category.innerHTML = `<option value="💰 משכורת">💰 משכורת</option><option value="🛵 משלוחים / טיפים">🛵 משלוחים / טיפים</option><option value="שונות">שונות</option>`;
         } else {
-            category.innerHTML = `
-                <option value="🎓 לימודים">🎓 לימודים</option>
-                <option value="🏍️ רכב / אופנוע">🏍️ רכב / אופנוע</option>
-                <option value="🛒 סופר">🛒 סופר</option>
-                <option value="🍔 מסעדות ואוכל">🍔 מסעדות ואוכל</option>
-                <option value="🎮 פנאי וגיימינג">🎮 פנאי וגיימינג</option>
-                <option value="📱 חשבונות">📱 חשבונות</option>
-                <option value="💡 שונות">💡 שונות</option>
-            `;
+            category.innerHTML = `<option value="🎓 לימודים">🎓 לימודים</option><option value="🏍️ רכב / אופנוע">🏍️ רכב / אופנוע</option><option value="🛒 סופר">🛒 סופר</option><option value="🍔 מסעדות ואוכל">🍔 מסעדות ואוכל</option><option value="🎮 פנאי וגיימינג">🎮 פנאי וגיימינג</option><option value="📱 חשבונות">📱 חשבונות</option><option value="💡 שונות">💡 שונות</option>`;
         }
     }
 
@@ -1250,76 +1169,37 @@
         e.preventDefault();
         const txTypeRaw = type.value;
         const txAmount = parseFloat(amount.value.replace(/,/g, ''));
-
-        if (isNaN(txAmount) || txAmount <= 0) {
-            showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false);
-            return;
-        }
+        if (isNaN(txAmount) || txAmount <= 0) { showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false); return; }
 
         if (txTypeRaw === 'withdrawal') {
-            if (!category.value || category.value === '') {
-                showCustomAlert('שגיאה ביעד', 'אנא בחר יעד חכם למשוך ממנו.', false);
-                return;
-            }
-
+            if (!category.value) { showCustomAlert('שגיאה ביעד', 'אנא בחר יעד חכם למשוך ממנו.', false); return; }
             const savedAmountRaw = transactions.filter(t => t.category === category.value && t.type === 'savings').reduce((acc, t) => acc + t.amount, 0);
             const withdrawAmount = transactions.filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + category.value).reduce((acc, t) => acc + t.amount, 0);
             const currentSavedInGoal = savedAmountRaw - withdrawAmount;
-
-            if (txAmount > currentSavedInGoal) {
-                showCustomAlert('חריגה ממשיכה', `לא ניתן למשוך סכום זה.\nביעד "${category.value}" יש כרגע רק ${currencySymbol}${currentSavedInGoal.toLocaleString('en-US')}.`, false);
-                return;
-            }
-        }
-        else if (txTypeRaw === 'savings') {
-            if (!category.value || category.value === '') {
-                showCustomAlert('שגיאה ביעד', 'אנא צור יעד חיסכון קודם באזור "יעדים חכמים".', false);
-                return;
-            }
-            if (txAmount > currentBalanceAmount) {
-                showCustomAlert('חריגה מהתקציב', `אין מספיק כסף בעו"ש כדי להפקיד את הסכום הזה לחיסכון!\nהסכום המבוקש (${currencySymbol}${txAmount.toLocaleString('en-US')}) גדול מהיתרה הפנויה (${currencySymbol}${currentBalanceAmount.toLocaleString('en-US')}).`, false);
-                return;
-            }
+            if (txAmount > currentSavedInGoal) { showCustomAlert('חריגה ממשיכה', `לא ניתן למשוך סכום זה.\nביעד "${category.value}" יש כרגע רק ${currencySymbol}${currentSavedInGoal.toLocaleString('en-US')}.`, false); return; }
+        } else if (txTypeRaw === 'savings') {
+            if (!category.value) { showCustomAlert('שגיאה ביעד', 'אנא צור יעד חיסכון קודם באזור "יעדים חכמים".', false); return; }
+            if (txAmount > currentBalanceAmount) { showCustomAlert('חריגה מהתקציב', `אין מספיק כסף בעו"ש כדי להפקיד את הסכום הזה לחיסכון!\nהסכום המבוקש (${currencySymbol}${txAmount.toLocaleString('en-US')}) גדול מהיתרה הפנויה (${currencySymbol}${currentBalanceAmount.toLocaleString('en-US')}).`, false); return; }
         }
 
-        let finalType = txTypeRaw;
-        let finalCategory = category.value;
-        let finalText = text.value;
+        let finalType = txTypeRaw; let finalCategory = category.value; let finalText = text.value;
+        if (txTypeRaw === 'withdrawal') { finalType = 'income'; finalCategory = 'משיכה מ: ' + category.value; finalText = text.value || 'משיכה מחיסכון'; }
 
-        if (txTypeRaw === 'withdrawal') {
-            finalType = 'income';
-            finalCategory = 'משיכה מ: ' + category.value;
-            finalText = text.value || 'משיכה מחיסכון';
-        }
-
-        const transaction = {
-            type: finalType, text: finalText, category: finalCategory,
-            amount: txAmount, date: new Date().toISOString().substring(0, 19)
-        };
+        const transaction = { type: finalType, text: finalText, category: finalCategory, amount: txAmount, date: new Date().toISOString().substring(0, 19) };
 
         try {
-            const response = await fetch(API_URL, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(transaction)
-            });
-
+            const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(transaction) });
             if(response.ok) {
                 const savedTx = await response.json();
-
                 const isWithdrawalTx = savedTx.type === 'income' && savedTx.category.startsWith('משיכה מ: ');
-                if (isWithdrawalTx) incomeSound.play().catch(e => {});
-                else if (savedTx.type === 'income') incomeSound.play().catch(e => {});
+                if (isWithdrawalTx || savedTx.type === 'income') incomeSound.play().catch(e => {});
                 else if (savedTx.type === 'expense') expenseSound.play().catch(e => {});
                 else if (savedTx.type === 'savings') savingsSound.play().catch(e => {});
 
                 transactions.push(savedTx);
                 text.value = ''; amount.value = '';
-                populateMonthsDropdown();
-                renderUI();
-
-                // הוספת 10 XP על כל פעולה פיננסית
+                populateMonthsDropdown(); renderUI();
                 updateGamingStats(10);
-
                 fetchBalance(true, true);
             }
         } catch (error) { console.error(error); }
@@ -1327,32 +1207,19 @@
 
     function removeTransaction(id) {
         const txToDelete = transactions.find(t => t.id === id);
-
         if (txToDelete && txToDelete.type === 'savings') {
             const goalName = txToDelete.category;
-            const remainingSavingsInGoal = transactions
-                .filter(t => t.type === 'savings' && t.category === goalName && t.id !== id)
-                .reduce((acc, t) => acc + t.amount, 0);
-
-            const totalWithdrawalsInGoal = transactions
-                .filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + goalName)
-                .reduce((acc, t) => acc + t.amount, 0);
-
-            if (totalWithdrawalsInGoal > remainingSavingsInGoal) {
-                showCustomAlert('שגיאת מחיקה', `לא ניתן למחוק הפקדה זו.\nכבר בוצעו משיכות מהיעד "${goalName}" בסך ${currencySymbol}${totalWithdrawalsInGoal.toLocaleString('en-US')}, ולכן מחיקת ההפקדה תכניס את החיסכון למינוס.`, false);
-                return;
-            }
+            const remainingSavingsInGoal = transactions.filter(t => t.type === 'savings' && t.category === goalName && t.id !== id).reduce((acc, t) => acc + t.amount, 0);
+            const totalWithdrawalsInGoal = transactions.filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + goalName).reduce((acc, t) => acc + t.amount, 0);
+            if (totalWithdrawalsInGoal > remainingSavingsInGoal) { showCustomAlert('שגיאת מחיקה', `לא ניתן למחוק הפקדה זו. כנסת את החיסכון למינוס.`, false); return; }
         }
-
         showCustomConfirm("מחיקת פעולה", "האם למחוק פעולה זו מההיסטוריה?", async () => {
             try {
                 const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
                 if(response.ok) {
                     deleteSound.play().catch(e => {});
                     transactions = transactions.filter(t => t.id !== id);
-                    populateMonthsDropdown();
-                    renderUI();
-                    fetchBalance(true, true);
+                    populateMonthsDropdown(); renderUI(); fetchBalance(true, true);
                 }
             } catch (error) { console.error(error); }
         });
@@ -1360,147 +1227,85 @@
 
     function populateMonthsDropdown() {
         const months = new Set();
-        transactions.forEach(t => {
-            const d = new Date(t.date);
-            months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-        });
+        transactions.forEach(t => { const d = new Date(t.date); months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); });
         const sortedMonths = Array.from(months).sort().reverse();
         const currentVal = monthFilter.value;
-
         monthFilter.innerHTML = '<option value="all">כל הזמן</option>';
         sortedMonths.forEach(m => {
             const [year, month] = m.split('-');
             const monthName = new Date(year, month - 1).toLocaleString('he-IL', { month: 'long', year: 'numeric' });
             monthFilter.innerHTML += `<option value="${m}">${monthName}</option>`;
         });
-        if (currentVal && sortedMonths.includes(currentVal)) { monthFilter.value = currentVal; }
+        if (currentVal && sortedMonths.includes(currentVal)) monthFilter.value = currentVal;
     }
 
     function renderUI() {
         list.innerHTML = '';
         const filterMonth = monthFilter.value || 'all';
         const searchTerm = searchInput.value.toLowerCase();
-
         const filteredTransactions = transactions.filter(t => {
             const d = new Date(t.date);
             const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            const matchMonth = filterMonth === 'all' || monthStr === filterMonth;
-
             const displayDateStr = d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-            const matchSearch = t.text.toLowerCase().includes(searchTerm) ||
-                t.category.toLowerCase().includes(searchTerm) ||
-                displayDateStr.includes(searchTerm);
-
-            return matchMonth && matchSearch;
+            return (filterMonth === 'all' || monthStr === filterMonth) && (t.text.toLowerCase().includes(searchTerm) || t.category.toLowerCase().includes(searchTerm) || displayDateStr.includes(searchTerm));
         });
 
-        if (filteredTransactions.length === 0) {
-            list.innerHTML = '<li class="empty-state"><i class="fas fa-inbox"></i>אין תנועות</li>';
-        } else {
-            [...filteredTransactions].reverse().forEach((t, index) => addTransactionDOM(t, index));
-        }
+        if (filteredTransactions.length === 0) list.innerHTML = '<li class="empty-state"><i class="fas fa-inbox"></i>אין תנועות</li>';
+        else [...filteredTransactions].reverse().forEach((t, index) => addTransactionDOM(t, index));
 
-        updateValues(filteredTransactions);
-        updateChart(filteredTransactions);
-        renderSmartGoals();
+        updateValues(filteredTransactions); updateChart(filteredTransactions); renderSmartGoals();
     }
 
     function renderSmartGoals() {
         const container = document.getElementById('goals-container');
         container.innerHTML = '';
-
-        if(smartGoals.length === 0) {
-            container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">לא הוגדרו יעדים חכמים עדיין</div>';
-            return;
-        }
-
+        if(smartGoals.length === 0) { container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">לא הוגדרו יעדים חכמים עדיין</div>'; return; }
         const savingsTxs = transactions.filter(t => t.type === 'savings');
 
         smartGoals.forEach(goal => {
             const savedAmountRaw = savingsTxs.filter(t => t.category === goal.name).reduce((acc, t) => acc + t.amount, 0);
             const withdrawAmount = transactions.filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + goal.name).reduce((acc, t) => acc + t.amount, 0);
             const savedAmount = savedAmountRaw - withdrawAmount;
-
             const percentage = Math.min(100, goal.targetAmount > 0 ? (savedAmount / goal.targetAmount) * 100 : 0);
-
-            let recommendationText = "";
-            let displayMonth = "";
-            let actionButton = "";
+            let recommendationText = ""; let displayMonth = ""; let actionButton = "";
             let remainingToSave = Math.max(0, goal.targetAmount - savedAmount);
 
             if (remainingToSave === 0) {
                 recommendationText = "🎉 היעד הושלם בהצלחה!";
-                actionButton = `
-                    <button type="button" class="finish-goal-btn" onclick="finishGoal(${goal.id}, '${goal.name}')">
-                        <i class="fas fa-trophy"></i> סיום ומשיכת הכסף
-                    </button>
-                `;
+                actionButton = `<button type="button" class="finish-goal-btn" onclick="finishGoal(${goal.id}, '${goal.name}')"><i class="fas fa-trophy"></i> סיום ומשיכת הכסף</button>`;
             } else {
                 if (!goal.targetMonth || goal.targetMonth === "") {
-                    displayMonth = "ללא תאריך (יעד פתוח)";
-                    recommendationText = `חסרים עוד ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})} להשלמת היעד`;
+                    displayMonth = "ללא תאריך (יעד פתוח)"; recommendationText = `חסרים עוד ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})} להשלמת היעד`;
                 } else {
                     const targetDate = new Date(goal.targetMonth + "-01");
                     displayMonth = targetDate.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
                     const today = new Date();
                     let monthsLeft = (targetDate.getFullYear() - today.getFullYear()) * 12 + targetDate.getMonth() - today.getMonth();
-
-                    if (monthsLeft <= 0) {
-                        recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
-                    } else {
-                        const monthlyRequired = remainingToSave / monthsLeft;
-                        recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ${currencySymbol}${monthlyRequired.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
-                    }
+                    if (monthsLeft <= 0) recommendationText = `הגעת לתאריך היעד! חסרים ${currencySymbol}${remainingToSave.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                    else recommendationText = `כדי לעמוד ביעד, הפרש השבוע/החודש: ${currencySymbol}${(remainingToSave / monthsLeft).toLocaleString('en-US', {maximumFractionDigits: 0})}`;
                 }
             }
 
-            const card = document.createElement('div');
-            card.className = 'smart-goal-card';
-            card.innerHTML = `
-                <div class="goal-header">
-                    <div><div class="goal-title">${goal.name}</div><div class="goal-target-date">יעד: ${displayMonth || 'הושלם!'}</div></div>
-                    <button class="delete-btn" onclick="deleteSmartGoal(${goal.id})" title="מחק יעד (ללא השלמה)"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="goal-stats">
-                    <span class="goal-saved">${currencySymbol}${savedAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
-                    <span class="goal-target">מתוך ${currencySymbol}${goal.targetAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
-                </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
-                <div class="monthly-recommendation">${recommendationText}</div>
-                ${actionButton}
-            `;
+            const card = document.createElement('div'); card.className = 'smart-goal-card';
+            card.innerHTML = `<div class="goal-header"><div><div class="goal-title">${goal.name}</div><div class="goal-target-date">יעד: ${displayMonth || 'הושלם!'}</div></div><button class="delete-btn" onclick="deleteSmartGoal(${goal.id})" title="מחק יעד (ללא השלמה)"><i class="fas fa-times"></i></button></div><div class="goal-stats"><span class="goal-saved">${currencySymbol}${savedAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span><span class="goal-target">מתוך ${currencySymbol}${goal.targetAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span></div><div class="progress-bar-bg"><div class="progress-bar-fill"></div></div><div class="monthly-recommendation">${recommendationText}</div>${actionButton}`;
             container.appendChild(card);
-            setTimeout(() => {
-                const fill = card.querySelector('.progress-bar-fill');
-                if(fill) fill.style.width = `${percentage}%`;
-            }, 100);
+            setTimeout(() => { const fill = card.querySelector('.progress-bar-fill'); if(fill) fill.style.width = `${percentage}%`; }, 100);
         });
     }
 
     function addTransactionDOM(transaction, index) {
         const isWithdrawal = transaction.type === 'income' && transaction.category.startsWith('משיכה מ: ');
         const displayType = isWithdrawal ? 'withdrawal' : transaction.type;
-
         let sign = displayType === 'income' ? '+' : displayType === 'withdrawal' ? '+' : displayType === 'expense' ? '-' : '→';
         const displayDate = new Date(transaction.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-        const item = document.createElement('li');
-        item.classList.add(displayType);
-        item.style.animationDelay = `${index * 0.05}s`;
-
-        item.innerHTML = `
-            <div class="details"><span class="date">${displayDate}</span><strong>${transaction.text}</strong><span class="category">${transaction.category}</span></div>
-            <div class="amount-controls"><span>${sign}${currencySymbol}${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-            <button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button></div>
-        `;
+        const item = document.createElement('li'); item.classList.add(displayType); item.style.animationDelay = `${index * 0.05}s`;
+        item.innerHTML = `<div class="details"><span class="date">${displayDate}</span><strong>${transaction.text}</strong><span class="category">${transaction.category}</span></div><div class="amount-controls"><span>${sign}${currencySymbol}${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span><button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button></div>`;
         list.appendChild(item);
     }
 
     function updateValues(filteredData) {
         const incomeTotal = filteredData.filter(item => item.type === 'income' && !item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
         const expenseTotal = filteredData.filter(item => item.type === 'expense').reduce((acc, item) => acc + item.amount, 0);
-
         const savingsTotalRaw = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => acc + item.amount, 0);
         const withdrawalsTotal = filteredData.filter(item => item.type === 'income' && item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
         const savingsTotal = savingsTotalRaw - withdrawalsTotal;
@@ -1513,9 +1318,7 @@
         animateValue(income, oldIncome, incomeTotal, 1500, false);
         animateValue(expense, oldExpense, expenseTotal, 1500, false);
 
-        savingsTotalUI.setAttribute('data-val', savingsTotal);
-        income.setAttribute('data-val', incomeTotal);
-        expense.setAttribute('data-val', expenseTotal);
+        savingsTotalUI.setAttribute('data-val', savingsTotal); income.setAttribute('data-val', incomeTotal); expense.setAttribute('data-val', expenseTotal);
     }
 
     function updateChart(filteredData) {
@@ -1532,61 +1335,22 @@
 
         expenseChartInstance = new Chart(ctx, {
             type: 'doughnut',
-            data: {
-                labels: Object.keys(categoryTotals),
-                datasets: [{
-                    data: Object.values(categoryTotals),
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' },
-                plugins: {
-                    legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) label += ': ';
-                                const value = context.parsed;
-                                const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
-                                const percentage = ((value / total) * 100).toFixed(1) + '%';
-                                label += currencySymbol + value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                                label += ' (' + percentage + ')';
-                                return label;
-                            }
-                        }
-                    }
-                },
-                cutout: '65%'
-            }
+            data: { labels: Object.keys(categoryTotals), datasets: [{ data: Object.values(categoryTotals), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' }, plugins: { legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } }, tooltip: { callbacks: { label: function(context) { let label = context.label || ''; if (label) label += ': '; const value = context.parsed; const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0); const percentage = ((value / total) * 100).toFixed(1) + '%'; label += currencySymbol + value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); label += ' (' + percentage + ')'; return label; } } } }, cutout: '65%' }
         });
     }
 
     function exportToCSV() {
-        if (transactions.length === 0) {
-            showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.', false);
-            return;
-        }
+        if (transactions.length === 0) { showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.', false); return; }
         let csvContent = "data:text/csv;charset=utf-8,\uFEFFתאריך,סוג,קטגוריה,תיאור,סכום\n";
         transactions.forEach(t => {
             const date = new Date(t.date).toLocaleDateString('he-IL');
             const isWithdrawal = t.type === 'income' && t.category.startsWith('משיכה מ: ');
             const typeLabel = isWithdrawal ? 'משיכה מחיסכון' : t.type === 'income' ? 'הכנסה' : t.type === 'expense' ? 'הוצאה' : 'חיסכון';
-
-            let catLabel = t.category;
-            if (isWithdrawal) catLabel = catLabel.replace('משיכה מ: ', '');
-
+            let catLabel = t.category; if (isWithdrawal) catLabel = catLabel.replace('משיכה מ: ', '');
             csvContent += `"${date}","${typeLabel}","${catLabel}","${t.text}","${t.amount}"\n`;
         });
-        const link = document.createElement("a");
-        link.href = encodeURI(csvContent);
-        link.download = "budget_data.csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const link = document.createElement("a"); link.href = encodeURI(csvContent); link.download = "budget_data.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     goalForm.addEventListener('submit', addSmartGoal);

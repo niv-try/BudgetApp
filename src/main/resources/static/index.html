@@ -851,16 +851,18 @@
     ];
 
     function renderBadges() {
-        if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
-
         const cabinet = document.getElementById('badges-cabinet');
+        if (!cabinet) return;
         cabinet.innerHTML = '';
 
+        let unlockedBadgesHistory = JSON.parse(localStorage.getItem('budgetAppBadges_' + currentUsername)) || [];
         let newlyUnlocked = false;
 
         BADGES.forEach(badge => {
-            const previouslyUnlocked = profileData.badges.includes(badge.id);
-            const meetsCondition = badge.check();
+            const previouslyUnlocked = unlockedBadgesHistory.includes(badge.id);
+            let meetsCondition = false;
+            try { meetsCondition = badge.check(); } catch(e){}
+
             const isUnlocked = previouslyUnlocked || meetsCondition;
 
             const el = document.createElement('i');
@@ -871,7 +873,7 @@
                 el.classList.add('unlocked', badge.colorClass);
                 if (!previouslyUnlocked) {
                     el.classList.add('just-unlocked');
-                    profileData.badges.push(badge.id);
+                    unlockedBadgesHistory.push(badge.id);
                     newlyUnlocked = true;
                     setTimeout(() => showCustomAlert('הישג חדש נפתח!', `השגת את המדליה: ${badge.name} 🏆`, false, true), 1000);
                 }
@@ -879,7 +881,16 @@
             cabinet.appendChild(el);
         });
 
-        if (newlyUnlocked) saveProfileData(); // שמירה
+        if (newlyUnlocked) {
+            localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(unlockedBadgesHistory));
+            // --- תוספת הבאדג'ים: שולח לשרת ה-Java כשיש באדג' חדש! ---
+            fetch('/api/account/badges', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(unlockedBadgesHistory)
+            }).catch(e => console.error(e));
+        }
+
         justFinishedGoal = false;
     }
 
@@ -1051,28 +1062,16 @@
             if(res.ok) {
                 const acc = await res.json();
 
-                // עדכון משתמש רק במידה וזה לא אורח
-                if (acc.username && acc.username !== 'אורח') {
-                    currentUsername = acc.username;
-
-                    // מנסה למשוך נתונים מהשרת. אם אין, משתמש בגיבוי המקומי
-                    if (acc.xp !== undefined && acc.xp > 0) {
-                        profileData.xp = acc.xp;
-                        profileData.streak = acc.streak;
-                        profileData.lastLogin = acc.lastLogin;
-                        profileData.badges = acc.badges ? acc.badges.split(',').filter(b=>b) : [];
-                        if(acc.profilePic) profileData.profilePic = acc.profilePic;
-                    }
-
-                    loadProfileUI();
+                // --- תוספת הבאדג'ים: שואב מהשרת למחשב! ---
+                if (acc.badges) {
+                    let serverBadges = acc.badges.split(',').filter(b => b !== '');
+                    localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(serverBadges));
                 }
-
-                updateGamingStats(0);
 
                 let newBal = acc.balance || 0;
                 let oldBal = currentBalanceAmount || 0;
-
                 currentBalanceAmount = newBal;
+
                 balanceUI.style.direction = 'ltr';
                 balanceUI.style.display = 'inline-block';
 
@@ -1082,6 +1081,7 @@
                     let sign = newBal < 0 ? '-' : '';
                     balanceUI.innerText = sign + currencySymbol + Math.abs(newBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 }
+
                 renderBadges();
             }
         } catch (e) { console.error(e); }

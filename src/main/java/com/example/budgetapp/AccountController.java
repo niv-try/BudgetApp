@@ -33,7 +33,9 @@ public class AccountController {
             }
         }
 
-        return new Account(username, currentBalance);
+        // מחזירים את האובייקט המקורי כדי שהאתר יקבל גם את המדליות
+        account.setBalance(currentBalance);
+        return account;
     }
 
     @PostMapping
@@ -42,7 +44,6 @@ public class AccountController {
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
 
-        // נחשב קודם מה הסך של כל הפעולות הקיימות כרגע
         double transactionsTotal = 0;
         List<Transaction> transactions = transactionRepository.findByOwnerUsername(username);
         for (Transaction t : transactions) {
@@ -53,11 +54,21 @@ public class AccountController {
             }
         }
 
-        // הטריק: היתרה ההתחלתית שלך תהיה המספר שביקשת פחות כל הפעולות.
-        // כך שכל מספר שתקליד באתר יהפוך מיידית לתוצאה הסופית והמדויקת!
         double newBaseBalance = desiredTotalBalance - transactionsTotal;
         account.setBalance(newBaseBalance);
 
         return repository.save(account);
+    }
+
+    // --- הנתיב החדש ששומר אך ורק את המדליות! ---
+    @PostMapping("/badges")
+    public void saveBadges(@RequestBody List<String> badges) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Account account = repository.findByOwnerUsername(username)
+                .orElse(new Account(username, 0.0));
+
+        // הופך את רשימת המדליות לטקסט ושומר בטבלה
+        account.setBadges(String.join(",", badges));
+        repository.save(account);
     }
 }

@@ -8,12 +8,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class Account {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @JsonProperty("username")
     private String ownerUsername;
-    private Long id;
+
     private double balance;
+
+    // הוספנו רק את השדה של הבאדג'ים למסד הנתונים!
+    private String badges;
 
     public Account() {}
 
@@ -22,10 +28,16 @@ public class Account {
         this.balance = balance;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getOwnerUsername() { return ownerUsername; }
     public void setOwnerUsername(String ownerUsername) { this.ownerUsername = ownerUsername; }
+
     public double getBalance() { return balance; }
     public void setBalance(double balance) { this.balance = balance; }
+
+    // Getters & Setters לבאדג'ים
+    public String getBadges() { return badges; }
+    public void setBadges(String badges) { this.badges = badges; }
 }

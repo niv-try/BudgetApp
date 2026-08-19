@@ -681,7 +681,6 @@
         badges: []
     };
 
-    // טעינה מיידית של נתונים מהזיכרון כדי למנוע הבהובים!
     if (currentUsername !== 'אורח') {
         const localData = localStorage.getItem('budgetAppProfileData_' + currentUsername);
         if (localData) {
@@ -698,7 +697,6 @@
             document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${currentUsername}`;
         }
 
-        // --- תוספת: עדכון ויזואלי מיידי כדי שלא יופיע בטעות "Level 1" או "0 ימים" בהמתנה לשרת ---
         const currentLevel = Math.floor((profileData.xp || 0) / 100) + 1;
         const xpIntoLevel = (profileData.xp || 0) % 100;
         document.getElementById('streak-counter').innerText = `${profileData.streak || 0} ימים`;
@@ -708,39 +706,30 @@
             const progress = document.getElementById('level-progress');
             if (progress) progress.style.width = `${xpIntoLevel}%`;
         }, 300);
-        // --------------------------------------------------------------------------------------
     }
 
-    // ציור הממשק ישר עם פתיחת העמוד
     document.addEventListener('DOMContentLoaded', () => {
         loadProfileUI();
-        updateGamingStats(0); // מסנכרן את הסטריק היומי ומוודא שהרמה מעודכנת ישר בכניסה לאתר!
+        updateGamingStats(0);
     });
 
-    /* פונקציית שמירה אלימה - קודם כל שומרת בדפדפן ואז מנסה לשלוח לשרת */
     async function saveProfileData() {
         if(currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
-
-        // 1. שמירה תמיד בזיכרון המקומי ככה שהכל מוגן מחיקה
         localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
-
-        // 2. ניסיון שקוף לשלוח לשרת שלך (בלי לזרוק שגיאות אם השרת לא מוגדר עדיין)
         try {
             await fetch('/api/account/profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(profileData)
             });
-        } catch(e) {
-            // מתעלמים משגיאות חיבור, המידע כבר מוגן בדפדפן
-        }
+        } catch(e) {}
     }
 
     function generateRandomAvatar() {
         const seed = Math.random().toString(36).substring(7);
         profileData.profilePic = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
         loadProfileUI();
-        saveProfileData(); // שמירה
+        saveProfileData();
     }
 
     function handleProfileUpload(event) {
@@ -750,7 +739,7 @@
             reader.onload = function(e) {
                 profileData.profilePic = e.target.result;
                 loadProfileUI();
-                saveProfileData(); // שמירה
+                saveProfileData();
             };
             reader.readAsDataURL(file);
         }
@@ -821,8 +810,6 @@
 
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
-
-        // בדיקה מה הייתה הרמה לפני התוספת
         const oldLevel = Math.floor((profileData.xp || 0) / 100) + 1;
 
         if (addXP > 0) profileData.xp = (profileData.xp || 0) + addXP;
@@ -846,7 +833,7 @@
             profileData.lastLogin = todayStr;
         }
 
-        saveProfileData(); // שמירה
+        saveProfileData();
 
         const currentLevel = Math.floor((profileData.xp || 0) / 100) + 1;
         const xpIntoLevel = (profileData.xp || 0) % 100;
@@ -1109,6 +1096,7 @@
             if(res.ok) {
                 const acc = await res.json();
 
+                // --- משיכת נתונים מהשרת ודריסת הזיכרון המקומי למניעת התנגשויות ---
                 if (acc.username && currentUsername !== acc.username) {
                     currentUsername = acc.username;
                     localStorage.setItem('budgetAppUsername', currentUsername);
@@ -1119,20 +1107,34 @@
                     } else {
                         profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
                     }
-
-                    loadProfileUI();
                 }
 
+                // הבטחה שמשתמש חדש מתחיל תמיד מ-20 XP ורצף של יום 1
+                if (!profileData.lastLogin || (profileData.xp === 0 && profileData.streak === 0)) {
+                    profileData.xp = 20;
+                    profileData.streak = 1;
+                    profileData.lastLogin = new Date().toISOString().split('T')[0];
+                }
+
+                // השרת הוא המלך: אם אין בשרת באדג'ים (למשל אחרי איפוס) - מוחקים גם מהדפדפן!
                 if (acc.badges) {
                     let serverBadges = acc.badges.split(',').filter(b => b !== '');
                     localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(serverBadges));
+                } else {
+                    localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify([]));
                 }
 
-                if (acc.profilePic && acc.profilePic !== profileData.profilePic) {
+                // סנכרון תמונת פרופיל מהשרת
+                if (acc.profilePic) {
                     profileData.profilePic = acc.profilePic;
-                    localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
-                    loadProfileUI();
+                } else {
+                    profileData.profilePic = '';
                 }
+
+                // שמירת הפרופיל המעודכן וטעינה
+                localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
+                loadProfileUI();
+                updateGamingStats(0);
 
                 let newBal = acc.balance || 0;
                 let oldBal = currentBalanceAmount || 0;
@@ -1432,7 +1434,6 @@
         const link = document.createElement("a"); link.href = encodeURI(csvContent); link.download = "budget_data.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    // פונקציית הקונפטי!
     function triggerConfetti() {
         const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
         for (let i = 0; i < 80; i++) {

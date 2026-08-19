@@ -710,7 +710,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadProfileUI();
-        updateGamingStats(0);
+        // הסרנו מכאן את העדכון העיוור כדי שהשרת יחליט כמה XP יש בהתחלה!
     });
 
     async function saveProfileData() {
@@ -808,32 +808,12 @@
     function updateGamingStats(addXP = 0) {
         if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
 
-        const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
         const oldLevel = Math.floor((profileData.xp || 0) / 100) + 1;
 
-        if (addXP > 0) profileData.xp = (profileData.xp || 0) + addXP;
-
-        if (profileData.lastLogin !== todayStr) {
-            if (profileData.lastLogin) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-                if (profileData.lastLogin === yesterdayStr) {
-                    profileData.streak = (profileData.streak || 0) + 1;
-                } else {
-                    profileData.streak = 1;
-                }
-            } else {
-                profileData.streak = 1;
-            }
-
-            profileData.xp = (profileData.xp || 0) + 20;
-            profileData.lastLogin = todayStr;
+        if (addXP > 0) {
+            profileData.xp = (profileData.xp || 0) + addXP;
+            saveProfileData(); // שומר לשרת מיד כשיש פעולה
         }
-
-        saveProfileData();
 
         const currentLevel = Math.floor((profileData.xp || 0) / 100) + 1;
         const xpIntoLevel = (profileData.xp || 0) % 100;
@@ -1095,28 +1075,45 @@
             const res = await fetch(ACCOUNT_API_URL);
             if(res.ok) {
                 const acc = await res.json();
+                let needServerSave = false;
 
-                // --- משיכת נתונים מהשרת ודריסת הזיכרון המקומי למניעת התנגשויות ---
                 if (acc.username && currentUsername !== acc.username) {
                     currentUsername = acc.username;
                     localStorage.setItem('budgetAppUsername', currentUsername);
-
-                    const localData = localStorage.getItem('budgetAppProfileData_' + currentUsername);
-                    if (localData) {
-                        profileData = JSON.parse(localData);
-                    } else {
-                        profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
-                    }
+                    profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
                 }
 
-                // הבטחה שמשתמש חדש מתחיל תמיד מ-20 XP ורצף של יום 1
-                if (!profileData.lastLogin || (profileData.xp === 0 && profileData.streak === 0)) {
+                // --- משיכת נתונים מהשרת והצבתם במקום הראשון ---
+                if (acc.lastLogin) { // אם כבר יש למשתמש הזה נתונים בשרת
+                    profileData.xp = acc.xp;
+                    profileData.streak = acc.streak;
+                    profileData.lastLogin = acc.lastLogin;
+                } else {
+                    // משתמש חדש לגמרי דנדש! נקודת פתיחה מדויקת
                     profileData.xp = 20;
                     profileData.streak = 1;
                     profileData.lastLogin = new Date().toISOString().split('T')[0];
+                    needServerSave = true;
                 }
 
-                // השרת הוא המלך: אם אין בשרת באדג'ים (למשל אחרי איפוס) - מוחקים גם מהדפדפן!
+                // בדיקת התחברות יומית ומתן בונוס מסונכרן
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (profileData.lastLogin !== todayStr) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                    if (profileData.lastLogin === yesterdayStr) {
+                        profileData.streak++;
+                    } else {
+                        profileData.streak = 1;
+                    }
+                    profileData.xp += 20; // בונוס התחברות יומית
+                    profileData.lastLogin = todayStr;
+                    needServerSave = true;
+                }
+
+                // השרת קובע: איפוס מוחלט של הבאדג'ים אם אין בשרת!
                 if (acc.badges) {
                     let serverBadges = acc.badges.split(',').filter(b => b !== '');
                     localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(serverBadges));
@@ -1124,17 +1121,18 @@
                     localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify([]));
                 }
 
-                // סנכרון תמונת פרופיל מהשרת
-                if (acc.profilePic) {
+                if (acc.profilePic && acc.profilePic !== profileData.profilePic) {
                     profileData.profilePic = acc.profilePic;
-                } else {
-                    profileData.profilePic = '';
                 }
 
-                // שמירת הפרופיל המעודכן וטעינה
+                // ציור הנתונים המסונכרנים אל המסך
                 localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
                 loadProfileUI();
                 updateGamingStats(0);
+
+                if (needServerSave) {
+                    saveProfileData(); // שולח בחזרה לשרת כדי לקבע את ההתחברות הראשונה/היומית
+                }
 
                 let newBal = acc.balance || 0;
                 let oldBal = currentBalanceAmount || 0;

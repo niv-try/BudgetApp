@@ -78,10 +78,20 @@ public class AccountController {
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
 
-        // אם נשלחה תמונה מהדפדפן, שומרים אותה למשתמש
-        if (payload.containsKey("profilePic")) {
-            account.setProfilePic((String) payload.get("profilePic"));
+        // שומר את כל נתוני הפרופיל (תמונה, XP, ימים ורצף) במסד הנתונים
+        if (payload.containsKey("profilePic") && payload.get("profilePic") != null) {
+            account.setProfilePic(payload.get("profilePic").toString());
         }
+        if (payload.containsKey("xp") && payload.get("xp") != null) {
+            account.setXp(((Number) payload.get("xp")).intValue());
+        }
+        if (payload.containsKey("streak") && payload.get("streak") != null) {
+            account.setStreak(((Number) payload.get("streak")).intValue());
+        }
+        if (payload.containsKey("lastLogin") && payload.get("lastLogin") != null) {
+            account.setLastLogin(payload.get("lastLogin").toString());
+        }
+
         repository.save(account);
     }
 }

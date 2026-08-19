@@ -23,6 +23,10 @@ public class Account {
     @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String profilePic;
 
+    private int xp = 20;
+    private int streak = 1;
+    private String lastLogin;
+
     public Account() {}
 
     public Account(String ownerUsername, double balance) {
@@ -45,4 +49,13 @@ public class Account {
 
     public String getProfilePic() { return profilePic; }
     public void setProfilePic(String profilePic) { this.profilePic = profilePic; }
+
+    public int getXp() { return xp; }
+    public void setXp(int xp) { this.xp = xp; }
+
+    public int getStreak() { return streak; }
+    public void setStreak(int streak) { this.streak = streak; }
+
+    public String getLastLogin() { return lastLogin; }
+    public void setLastLogin(String lastLogin) { this.lastLogin = lastLogin; }
 }

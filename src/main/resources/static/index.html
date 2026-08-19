@@ -512,7 +512,7 @@
             <button class="export-btn" onclick="exportToCSV()">
                 <i class="fas fa-file-excel"></i> ייצוא
             </button>
-            <a href="/logout" class="export-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); text-decoration: none;">
+            <a href="/logout" onclick="localStorage.removeItem('budgetAppUsername');" class="export-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); text-decoration: none;">
                 <i class="fas fa-sign-out-alt"></i> התנתק
             </a>
         </div>
@@ -1062,10 +1062,34 @@
             if(res.ok) {
                 const acc = await res.json();
 
+                // --- סנכרון המשתמש מול השרת למניעת התנגשויות ---
+                if (acc.username && currentUsername !== acc.username) {
+                    currentUsername = acc.username;
+                    localStorage.setItem('budgetAppUsername', currentUsername);
+
+                    const localData = localStorage.getItem('budgetAppProfileData_' + currentUsername);
+                    if (localData) {
+                        profileData = JSON.parse(localData);
+                    } else {
+                        profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
+                    }
+
+                    loadProfileUI();
+                    updateGamingStats(); // מרפרש את תצוגת ה-XP והמדליות
+                }
+                // ------------------------------------
+
                 // --- תוספת הבאדג'ים: שואב מהשרת למחשב! ---
                 if (acc.badges) {
                     let serverBadges = acc.badges.split(',').filter(b => b !== '');
                     localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(serverBadges));
+                }
+
+                // --- משיכת תמונת הפרופיל מהשרת ---
+                if (acc.profilePic && acc.profilePic !== profileData.profilePic) {
+                    profileData.profilePic = acc.profilePic;
+                    localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
+                    loadProfileUI();
                 }
 
                 let newBal = acc.balance || 0;

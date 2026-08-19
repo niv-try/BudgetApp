@@ -20,6 +20,8 @@ public class Account {
 
     // הוספנו רק את השדה של הבאדג'ים למסד הנתונים!
     private String badges;
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String profilePic;
 
     public Account() {}
 
@@ -40,4 +42,7 @@ public class Account {
     // Getters & Setters לבאדג'ים
     public String getBadges() { return badges; }
     public void setBadges(String badges) { this.badges = badges; }
+
+    public String getProfilePic() { return profilePic; }
+    public void setProfilePic(String profilePic) { this.profilePic = profilePic; }
 }

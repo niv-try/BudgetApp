@@ -71,4 +71,17 @@ public class AccountController {
         account.setBadges(String.join(",", badges));
         repository.save(account);
     }
+
+    @PostMapping("/profile")
+    public void saveProfile(@RequestBody java.util.Map<String, Object> payload) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Account account = repository.findByOwnerUsername(username)
+                .orElse(new Account(username, 0.0));
+
+        // אם נשלחה תמונה מהדפדפן, שומרים אותה למשתמש
+        if (payload.containsKey("profilePic")) {
+            account.setProfilePic((String) payload.get("profilePic"));
+        }
+        repository.save(account);
+    }
 }

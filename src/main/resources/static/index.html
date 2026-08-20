@@ -336,7 +336,7 @@
             background-size: 16px; padding-left: 40px; cursor: pointer;
         }
 
-        /* עיצוב התפריט המעוצב החדש לבחירת תאריך (בדיוק כמו ביעדים) */
+        /* עיצוב התפריט המעוצב החדש לבחירת תאריך */
         .custom-date-picker-wrapper { position: relative; width: 100%; }
         .date-trigger {
             width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.1);
@@ -354,6 +354,24 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 15px; box-sizing: border-box;
         }
         .date-dropdown.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+        /* --- עיצוב כפתור "ללא תאריך" --- */
+        .no-date-btn {
+            width: 100%; padding: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            color: var(--text-muted);
+            border-radius: 10px; cursor: pointer;
+            transition: all 0.3s ease; font-family: inherit;
+            font-size: 1rem; font-weight: 600;
+            margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .no-date-btn:hover {
+            background: rgba(59, 130, 246, 0.1); border-color: var(--accent-blue); color: white;
+        }
+        .no-date-btn i { color: var(--text-muted); transition: color 0.3s; }
+        .no-date-btn:hover i { color: var(--accent-blue); }
+
         .months-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 240px; overflow-y: auto; padding-right: 5px;
         }
@@ -642,7 +660,7 @@
                         <span id="date-trigger-text">תאריך יעד (אופציונלי)</span>
                     </div>
                     <div class="date-dropdown" id="date-dropdown">
-                        <button type="button" class="no-date-btn" onclick="selectDate('', 'ללא תאריך (יעד פתוח)')">
+                        <button type="button" class="no-date-btn" onclick="selectDate('', 'ללא תאריך (יעד פתוח)', 'goal-date', 'date-trigger-text', 'date-dropdown')">
                             <i class="fas fa-infinity"></i> ללא תאריך (יעד פתוח)
                         </button>
                         <div class="months-grid" id="months-grid"></div>
@@ -661,7 +679,8 @@
 
     <div class="main-content">
         <div>
-            <div class="panel">
+            <!-- תיקון מיקום השכבות כדי שהתפריט יצוף מעל הכל -->
+            <div class="panel" style="position: relative; z-index: 60;">
                 <h2><i class="fas fa-plus-circle"></i> הוספת פעולה</h2>
                 <form id="form">
                     <div class="form-row">
@@ -677,9 +696,9 @@
                             </select>
                         </div>
 
-                        <!-- התפריט המעוצב החדש לבחירת תאריך החיוב (במקום input date רגיל) -->
-                        <div class="form-group custom-date-picker-wrapper" id="credit-date-group" style="display: none;">
-                            <label>תאריך ירידת חיוב</label>
+                        <!-- חודש ירידת חיוב (מעוצב) -->
+                        <div class="form-group custom-date-picker-wrapper" id="credit-date-group" style="display: none; flex: 2;">
+                            <label id="credit-date-label">חודש ירידת חיוב</label>
                             <div class="date-trigger" id="credit-date-trigger" onclick="toggleDatePicker('credit-date-dropdown')">
                                 <i class="fas fa-calendar-alt" style="color: #f59e0b;"></i>
                                 <span id="credit-date-trigger-text" style="color: #f59e0b;">בחר חודש חיוב</span>
@@ -688,6 +707,14 @@
                                 <div class="months-grid" id="credit-months-grid"></div>
                             </div>
                             <input type="hidden" id="credit-date" value="">
+                        </div>
+
+                        <!-- יום בחודש ירידת חיוב (חדש) -->
+                        <div class="form-group" id="credit-day-group" style="display: none; flex: 1; min-width: 90px; max-width: 100px;">
+                            <label>יום בחודש</label>
+                            <select id="credit-day" onchange="updateCreditDateHidden()">
+                                <!-- מיוצר באמצעות JS -->
+                            </select>
                         </div>
 
                         <div class="form-group" id="category-group">
@@ -803,7 +830,18 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadProfileUI();
+        initDays();
     });
+
+    // מאתחל את אפשרויות הימים (1-31) בתוך כפתור הסלקט
+    function initDays() {
+        const daySelect = document.getElementById('credit-day');
+        daySelect.innerHTML = '';
+        for (let i = 1; i <= 31; i++) {
+            const selected = (i === 10) ? 'selected' : '';
+            daySelect.innerHTML += `<option value="${i}" ${selected}>${i}</option>`;
+        }
+    }
 
     async function saveProfileData() {
         if(currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
@@ -1072,7 +1110,7 @@
         justFinishedGoal = false;
     }
 
-    // יצירת גריד החודשים הכללי (לסינון לפי חודש בראש העמוד)
+    // יצירת גריד החודשים הכללי (לסינון לפי חודש בראש העמוד וגם לבחירת יעד)
     function initMonthPicker() {
         const grid = document.getElementById('months-grid');
         grid.innerHTML = '';
@@ -1096,7 +1134,8 @@
         }
     }
 
-    // יצירת גריד החודשים עבור אשראי והוראות קבע בטופס הוספת פעולה
+    // יצירת גריד החודשים עבור אשראי והוראות קבע
+    let selectedCreditYM = '';
     function initCreditMonthPicker() {
         const grid = document.getElementById('credit-months-grid');
         grid.innerHTML = '';
@@ -1108,17 +1147,31 @@
         for (let i = 0; i < 36; i++) {
             let m = (currentMonth + i) % 12;
             let y = currentYear + Math.floor((currentMonth + i) / 12);
-            // מגדיר את התאריך תמיד ל-10 בחודש הנבחר כדי שייראה כמו חיוב אמיתי
-            let val = `${y}-${String(m + 1).padStart(2, '0')}-10`;
+            let valYM = `${y}-${String(m + 1).padStart(2, '0')}`;
             let text = `${hebrewMonths[m]} ${y}`;
 
             let btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'month-option';
             btn.innerHTML = `<span class="month-name">${hebrewMonths[m]}</span><span class="month-year">${y}</span>`;
-            btn.onclick = () => selectDate(val, text, 'credit-date', 'credit-date-trigger-text', 'credit-date-dropdown');
+            btn.onclick = () => selectCreditDate(valYM, text);
             grid.appendChild(btn);
         }
+    }
+
+    // פונקציות העזר לבחירת תאריך משולב לחיובי אשראי
+    function selectCreditDate(ym, text) {
+        selectedCreditYM = ym;
+        document.getElementById('credit-date-trigger-text').innerText = text;
+        document.getElementById('credit-date-dropdown').classList.remove('show');
+        updateCreditDateHidden();
+    }
+
+    function updateCreditDateHidden() {
+        if (!selectedCreditYM) return;
+        let day = document.getElementById('credit-day').value.padStart(2, '0');
+        // מחבר את החודש שנבחר יחד עם היום שנבחר להרכבת תאריך מלא
+        document.getElementById('credit-date').value = `${selectedCreditYM}-${day}`;
     }
 
     function toggleDatePicker(dropdownId) {
@@ -1490,21 +1543,26 @@
     function handleTypeChange() {
         const typeVal = document.getElementById('type').value;
         const creditGroup = document.getElementById('credit-date-group');
-        const creditLabel = document.querySelector('label[for="credit-date"]');
+        const creditDayGroup = document.getElementById('credit-day-group');
+        const creditLabel = document.getElementById('credit-date-label');
 
         if (typeVal === 'credit_expense' || typeVal === 'recurring_expense') {
             creditGroup.style.display = 'block';
-            if (creditLabel) creditLabel.innerText = typeVal === 'recurring_expense' ? 'תאריך תחילת חיוב קבוע' : 'תאריך ירידת חיוב';
+            creditDayGroup.style.display = 'block';
+            if (creditLabel) creditLabel.innerText = typeVal === 'recurring_expense' ? 'חודש תחילת חיוב' : 'חודש ירידת חיוב';
 
-            if (!document.getElementById('credit-date').value) {
+            if (!document.getElementById('credit-date').value || !selectedCreditYM) {
                 let now = new Date();
                 let nextMonth = new Date(now.getFullYear(), now.getMonth() + (typeVal === 'recurring_expense' ? 0 : 1), 10);
-                let defaultVal = nextMonth.toISOString().split('T')[0];
-                document.getElementById('credit-date').value = defaultVal;
+
+                selectedCreditYM = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth()+1).padStart(2,'0')}`;
+                document.getElementById('credit-day').value = "10"; // ברירת מחדל ליום ה-10
+                updateCreditDateHidden();
                 document.getElementById('credit-date-trigger-text').innerText = `${nextMonth.toLocaleString('he-IL', { month: 'long', year: 'numeric' })}`;
             }
         } else {
             creditGroup.style.display = 'none';
+            creditDayGroup.style.display = 'none';
         }
 
         if(typeVal === 'savings' || typeVal === 'withdrawal') {
@@ -1529,6 +1587,7 @@
         if (txTypeRaw === 'credit_expense' || txTypeRaw === 'recurring_expense') {
             const chosenDate = document.getElementById('credit-date').value;
             if(!chosenDate) { showCustomAlert('שגיאה', 'נא לבחור תאריך.', false); return; }
+            // מוסיף את שעת ההתחלה כדי למנוע בעיות אזור זמן והבטחת התאריך המדויק
             txDate = chosenDate + 'T00:00:00';
         }
 

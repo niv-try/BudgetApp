@@ -127,7 +127,7 @@
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
-        /* --- עיצוב הגיימיפיקציה (רמות וסטריקים) --- */
+        /* --- עיצוב הגיימיפיקציה --- */
         .gaming-stats { display: flex; gap: 15px; margin-top: 8px; flex-wrap: wrap; }
         .stat-pill {
             background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 20px;
@@ -270,7 +270,7 @@
         .export-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5); filter: brightness(1.1); }
         .export-btn:active { transform: translateY(1px) scale(0.98); }
 
-        /* הגריד של 5 הכרטיסיות (כולל כרטיס אשראי קרוב) */
+        /* הגריד של 5 הכרטיסיות */
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 20px; }
         .card {
             background: var(--glass-bg); backdrop-filter: blur(10px); padding: 20px 15px;
@@ -336,6 +336,7 @@
             background-size: 16px; padding-left: 40px; cursor: pointer;
         }
 
+        /* עיצוב התפריט המעוצב החדש לבחירת תאריך (בדיוק כמו ביעדים) */
         .custom-date-picker-wrapper { position: relative; width: 100%; }
         .date-trigger {
             width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.1);
@@ -353,12 +354,6 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 15px; box-sizing: border-box;
         }
         .date-dropdown.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .no-date-btn {
-            width: 100%; padding: 12px; background: rgba(59, 130, 246, 0.15); border: 1px dashed var(--accent-blue);
-            color: #93c5fd; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-            margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1rem;
-        }
-        .no-date-btn:hover { background: rgba(59, 130, 246, 0.3); color: white; }
         .months-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 240px; overflow-y: auto; padding-right: 5px;
         }
@@ -424,6 +419,8 @@
         .list li.credit_expense { border-right-color: #f59e0b; }
         .list li.savings { border-right-color: #a78bfa; }
         .list li.withdrawal { border-right-color: #3b82f6; }
+        .list li.recurring-item { border-right-color: #8b5cf6; }
+        .list li.recurring-item .amount-controls span { color: #c4b5fd; text-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
 
         .details { display: flex; flex-direction: column; gap: 3px; }
         .details strong { font-size: 1rem; color: var(--text-main); }
@@ -640,7 +637,7 @@
                 </div>
 
                 <div class="form-group custom-date-picker-wrapper" id="date-picker-wrapper">
-                    <div class="date-trigger" id="date-trigger" onclick="toggleDatePicker()">
+                    <div class="date-trigger" id="date-trigger" onclick="toggleDatePicker('date-dropdown')">
                         <i class="fas fa-calendar-alt"></i>
                         <span id="date-trigger-text">תאריך יעד (אופציונלי)</span>
                     </div>
@@ -673,15 +670,26 @@
                             <select id="type" onchange="handleTypeChange()">
                                 <option value="expense">הוצאה (מיידית)</option>
                                 <option value="credit_expense">הוצאה באשראי (עתידית)</option>
+                                <option value="recurring_expense">הוראת קבע (הוצאה חודשית)</option>
                                 <option value="income">הכנסה</option>
                                 <option value="savings">הפקדה לחיסכון</option>
                                 <option value="withdrawal">משיכה מחיסכון</option>
                             </select>
                         </div>
-                        <div class="form-group" id="credit-date-group" style="display: none;">
-                            <label for="credit-date">תאריך ירידת חיוב</label>
-                            <input type="date" id="credit-date" style="color: #f59e0b; border-color: rgba(245, 158, 11, 0.4);">
+
+                        <!-- התפריט המעוצב החדש לבחירת תאריך החיוב (במקום input date רגיל) -->
+                        <div class="form-group custom-date-picker-wrapper" id="credit-date-group" style="display: none;">
+                            <label>תאריך ירידת חיוב</label>
+                            <div class="date-trigger" id="credit-date-trigger" onclick="toggleDatePicker('credit-date-dropdown')">
+                                <i class="fas fa-calendar-alt" style="color: #f59e0b;"></i>
+                                <span id="credit-date-trigger-text" style="color: #f59e0b;">בחר חודש חיוב</span>
+                            </div>
+                            <div class="date-dropdown" id="credit-date-dropdown">
+                                <div class="months-grid" id="credit-months-grid"></div>
+                            </div>
+                            <input type="hidden" id="credit-date" value="">
                         </div>
+
                         <div class="form-group" id="category-group">
                             <label for="category">קטגוריה / יעד</label>
                             <select id="category"></select>
@@ -709,13 +717,20 @@
             </div>
         </div>
 
-        <div class="panel">
-            <h2><i class="fas fa-list"></i> היסטוריה</h2>
-            <div class="search-bar-wrapper">
-                <input type="text" id="search-input" class="search-bar" placeholder="חפש לפי תיאור או תאריך (למשל 13.08)..." onkeyup="renderUI()">
-                <i class="fas fa-search"></i>
+        <div>
+            <div class="panel" style="margin-bottom: 20px;">
+                <h2><i class="fas fa-sync-alt" style="color: #a855f7;"></i> הוראות קבע פעילות</h2>
+                <ul id="recurring-list" class="list" style="max-height: 250px;"></ul>
             </div>
-            <ul id="list" class="list"></ul>
+
+            <div class="panel">
+                <h2><i class="fas fa-list"></i> היסטוריה</h2>
+                <div class="search-bar-wrapper">
+                    <input type="text" id="search-input" class="search-bar" placeholder="חפש לפי תיאור או תאריך (למשל 13.08)..." onkeyup="renderUI()">
+                    <i class="fas fa-search"></i>
+                </div>
+                <ul id="list" class="list"></ul>
+            </div>
         </div>
     </div>
 </div>
@@ -916,9 +931,12 @@
                 const savedTx = await response.json();
                 savingsSound.play().catch(e => {});
                 transactions.push(savedTx);
+
+                processTransactions();
                 populateMonthsDropdown(); renderUI();
                 await updateGamingStats(10);
                 await fetchBalance(true, true);
+
                 closeQuickDeposit();
                 showCustomAlert('הפקדה בוצעה!', `הופקדו ${currencySymbol}${txAmount.toLocaleString('en-US')} ליעד בהצלחה.`, true);
             }
@@ -931,14 +949,11 @@
         const oldLevel = Math.floor((profileData.xp || 0) / 100) + 1;
         let xpGained = false;
 
-        // הוספת XP רק כשיש פעולה יזומה
         if (addXP > 0) {
             profileData.xp = (profileData.xp || 0) + addXP;
-            await saveProfileData();
             xpGained = true;
         }
 
-        // חישוב הרצף היומי בלי בונוס XP
         const todayStr = new Date().toISOString().split('T')[0];
         if (profileData.lastLogin !== todayStr && addXP === 0) {
             const yesterday = new Date();
@@ -951,8 +966,9 @@
                 profileData.streak = 1;
             }
             profileData.lastLogin = todayStr;
-            await saveProfileData();
         }
+
+        await saveProfileData();
 
         const currentLevel = Math.floor((profileData.xp || 0) / 100) + 1;
         const xpIntoLevel = (profileData.xp || 0) % 100;
@@ -997,7 +1013,7 @@
             const m = t.date.substring(0, 7);
             if (!months[m]) months[m] = { inc: 0, exp: 0 };
             if (t.type === 'income' && !t.category.startsWith('משיכה מ:')) months[m].inc += t.amount;
-            if (t.type === 'expense' || t.type === 'credit_expense') months[m].exp += t.amount;
+            if (t.type === 'expense' || t.type === 'credit_expense' || t.type === 'recurring_expense') months[m].exp += t.amount;
         });
         for (let m in months) {
             if (months[m].inc > months[m].exp && months[m].exp > 0) return true;
@@ -1056,6 +1072,7 @@
         justFinishedGoal = false;
     }
 
+    // יצירת גריד החודשים הכללי (לסינון לפי חודש בראש העמוד)
     function initMonthPicker() {
         const grid = document.getElementById('months-grid');
         grid.innerHTML = '';
@@ -1074,23 +1091,55 @@
             btn.type = 'button';
             btn.className = 'month-option';
             btn.innerHTML = `<span class="month-name">${hebrewMonths[m]}</span><span class="month-year">${y}</span>`;
-            btn.onclick = () => selectDate(val, text);
+            btn.onclick = () => selectDate(val, text, 'goal-date', 'date-trigger-text', 'date-dropdown');
             grid.appendChild(btn);
         }
     }
 
-    function toggleDatePicker() { document.getElementById('date-dropdown').classList.toggle('show'); }
-    function selectDate(val, text) {
-        document.getElementById('goal-date').value = val;
-        document.getElementById('date-trigger-text').innerText = text;
-        document.getElementById('date-dropdown').classList.remove('show');
+    // יצירת גריד החודשים עבור אשראי והוראות קבע בטופס הוספת פעולה
+    function initCreditMonthPicker() {
+        const grid = document.getElementById('credit-months-grid');
+        grid.innerHTML = '';
+        const today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonth = today.getMonth();
+        const hebrewMonths = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
+        for (let i = 0; i < 36; i++) {
+            let m = (currentMonth + i) % 12;
+            let y = currentYear + Math.floor((currentMonth + i) / 12);
+            // מגדיר את התאריך תמיד ל-10 בחודש הנבחר כדי שייראה כמו חיוב אמיתי
+            let val = `${y}-${String(m + 1).padStart(2, '0')}-10`;
+            let text = `${hebrewMonths[m]} ${y}`;
+
+            let btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'month-option';
+            btn.innerHTML = `<span class="month-name">${hebrewMonths[m]}</span><span class="month-year">${y}</span>`;
+            btn.onclick = () => selectDate(val, text, 'credit-date', 'credit-date-trigger-text', 'credit-date-dropdown');
+            grid.appendChild(btn);
+        }
     }
+
+    function toggleDatePicker(dropdownId) {
+        document.getElementById(dropdownId).classList.toggle('show');
+    }
+
+    function selectDate(val, text, inputId, triggerTextId, dropdownId) {
+        document.getElementById(inputId).value = val;
+        document.getElementById(triggerTextId).innerText = text;
+        document.getElementById(dropdownId).classList.remove('show');
+    }
+
     document.addEventListener('click', function(event) {
-        const wrapper = document.getElementById('date-picker-wrapper');
-        if (!wrapper.contains(event.target)) document.getElementById('date-dropdown').classList.remove('show');
+        const wrapper1 = document.getElementById('date-picker-wrapper');
+        const wrapper2 = document.getElementById('credit-date-group');
+        if (wrapper1 && !wrapper1.contains(event.target)) document.getElementById('date-dropdown').classList.remove('show');
+        if (wrapper2 && !wrapper2.contains(event.target)) document.getElementById('credit-date-dropdown').classList.remove('show');
     });
 
     initMonthPicker();
+    initCreditMonthPicker();
 
     const balanceUI = document.getElementById('balance');
     const savingsTotalUI = document.getElementById('savings-total');
@@ -1108,6 +1157,7 @@
 
     let expenseChartInstance = null;
     let transactions = [];
+    let expandedTransactions = [];
     let smartGoals = [];
     let currentBalanceAmount = 0;
 
@@ -1205,6 +1255,65 @@
         window.requestAnimationFrame(step);
     }
 
+    // לוגיקת עיבוד העסקאות והוספת הסוגריים המבוקשות
+    function processTransactions() {
+        expandedTransactions = [];
+        let now = new Date();
+
+        transactions.forEach(t => {
+            let cleanText = t.text.replace(' 💳', '').replace(' 🔄', '').trim();
+
+            if (t.type === 'recurring_expense') {
+                let startDate = new Date(t.date);
+                let tempDate = new Date(startDate);
+                let limit = 0;
+
+                while (tempDate <= now && limit < 240) {
+                    expandedTransactions.push({
+                        ...t,
+                        date: tempDate.toISOString(),
+                        type: 'recurring_history',
+                        text: cleanText + ' (חיוב קבוע)'
+                    });
+
+                    let expectedMonth = (tempDate.getMonth() + 1) % 12;
+                    tempDate.setMonth(tempDate.getMonth() + 1);
+                    if (tempDate.getMonth() !== expectedMonth) tempDate.setDate(0);
+                    limit++;
+                }
+
+                // מציג בחיוב קרוב אך ורק אם החיוב הבא חל בחודש הנוכחי
+                if (tempDate.getMonth() === now.getMonth() && tempDate.getFullYear() === now.getFullYear()) {
+                    expandedTransactions.push({
+                        ...t,
+                        date: tempDate.toISOString(),
+                        type: 'credit_expense',
+                        text: cleanText + ' (חיוב קרוב)'
+                    });
+                }
+            } else if (t.type === 'credit_expense') {
+                let isPast = new Date(t.date) <= now;
+                expandedTransactions.push({
+                    ...t,
+                    type: isPast ? 'past_credit_expense' : t.type,
+                    text: cleanText + (isPast ? ' (אשראי שירד)' : ' (חיוב קרוב)')
+                });
+            } else if (t.type === 'expense') {
+                expandedTransactions.push({
+                    ...t,
+                    text: cleanText + ' (חיוב מיידי)'
+                });
+            } else {
+                expandedTransactions.push({
+                    ...t,
+                    text: cleanText
+                });
+            }
+        });
+
+        expandedTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
     async function fetchData() {
         document.getElementById('currency-selector').value = currentCurrency;
         try {
@@ -1212,6 +1321,7 @@
             if(txRes.ok) transactions = await txRes.json();
             if(goalsRes.ok) smartGoals = await goalsRes.json();
 
+            processTransactions();
             handleTypeChange();
             populateMonthsDropdown();
             renderUI();
@@ -1254,7 +1364,6 @@
                     } else {
                         profileData.streak = 1;
                     }
-                    // הסרנו את התוספת האוטומטית של ה-20 XP
                     profileData.lastLogin = todayStr;
                     needServerSave = true;
                 }
@@ -1350,8 +1459,8 @@
                     smartGoals = smartGoals.filter(g => g.id !== goalId);
                     transactions = transactions.filter(t => !((t.type === 'savings' && t.category === goalName) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalName)));
                     justFinishedGoal = true;
+                    processTransactions();
                     handleTypeChange(); populateMonthsDropdown(); renderUI();
-                    await updateGamingStats(0); // הוסר בונוס 50 XP
                     await fetchBalance(true, true);
                     showCustomAlert('אלוף!', 'היעד הושלם בהצלחה והכסף חזר לעו"ש.', true);
                 }
@@ -1371,6 +1480,7 @@
                     deleteSound.play().catch(e => {});
                     smartGoals = smartGoals.filter(g => g.id !== id);
                     transactions = transactions.filter(t => !((t.type === 'savings' && t.category === goalToDelete.name) || (t.type === 'income' && t.category === 'משיכה מ: ' + goalToDelete.name)));
+                    processTransactions();
                     handleTypeChange(); populateMonthsDropdown(); renderUI(); await fetchBalance(true, true);
                 }
             } catch (error) { console.error(error); }
@@ -1380,12 +1490,19 @@
     function handleTypeChange() {
         const typeVal = document.getElementById('type').value;
         const creditGroup = document.getElementById('credit-date-group');
+        const creditLabel = document.querySelector('label[for="credit-date"]');
 
-        if (typeVal === 'credit_expense') {
+        if (typeVal === 'credit_expense' || typeVal === 'recurring_expense') {
             creditGroup.style.display = 'block';
-            let now = new Date();
-            let nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 10);
-            document.getElementById('credit-date').value = nextMonth.toISOString().split('T')[0];
+            if (creditLabel) creditLabel.innerText = typeVal === 'recurring_expense' ? 'תאריך תחילת חיוב קבוע' : 'תאריך ירידת חיוב';
+
+            if (!document.getElementById('credit-date').value) {
+                let now = new Date();
+                let nextMonth = new Date(now.getFullYear(), now.getMonth() + (typeVal === 'recurring_expense' ? 0 : 1), 10);
+                let defaultVal = nextMonth.toISOString().split('T')[0];
+                document.getElementById('credit-date').value = defaultVal;
+                document.getElementById('credit-date-trigger-text').innerText = `${nextMonth.toLocaleString('he-IL', { month: 'long', year: 'numeric' })}`;
+            }
         } else {
             creditGroup.style.display = 'none';
         }
@@ -1407,13 +1524,12 @@
         if (isNaN(txAmount) || txAmount <= 0) { showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false); return; }
 
         let txDate = new Date().toISOString().substring(0, 19);
-        let finalText = text.value;
+        let finalText = text.value.replace(' 💳', '').replace(' 🔄', '').trim();
 
-        if (txTypeRaw === 'credit_expense') {
+        if (txTypeRaw === 'credit_expense' || txTypeRaw === 'recurring_expense') {
             const chosenDate = document.getElementById('credit-date').value;
-            if(!chosenDate) { showCustomAlert('שגיאה', 'נא לבחור תאריך חיוב.', false); return; }
+            if(!chosenDate) { showCustomAlert('שגיאה', 'נא לבחור תאריך.', false); return; }
             txDate = chosenDate + 'T00:00:00';
-            finalText = text.value + ' 💳';
         }
 
         if (txTypeRaw === 'withdrawal') {
@@ -1443,6 +1559,8 @@
 
                 transactions.push(savedTx);
                 text.value = ''; amount.value = '';
+
+                processTransactions();
                 populateMonthsDropdown(); renderUI();
                 await updateGamingStats(10);
                 await fetchBalance(true, true);
@@ -1458,12 +1576,19 @@
             const totalWithdrawalsInGoal = transactions.filter(t => t.type === 'income' && t.category === 'משיכה מ: ' + goalName).reduce((acc, t) => acc + t.amount, 0);
             if (totalWithdrawalsInGoal > remainingSavingsInGoal) { showCustomAlert('שגיאת מחיקה', `לא ניתן למחוק הפקדה זו. כנסת את החיסכון למינוס.`, false); return; }
         }
-        showCustomConfirm("מחיקת פעולה", "האם למחוק פעולה זו מההיסטוריה?", async () => {
+
+        let confirmMsg = "האם למחוק פעולה זו מההיסטוריה?";
+        if (txToDelete && txToDelete.type === 'recurring_expense') {
+            confirmMsg = "מחיקת הוראת קבע תבטל אותה ותמחק את כל חיובי העבר שלה. האם להמשיך?";
+        }
+
+        showCustomConfirm("מחיקת פעולה", confirmMsg, async () => {
             try {
                 const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
                 if(response.ok) {
                     deleteSound.play().catch(e => {});
                     transactions = transactions.filter(t => t.id !== id);
+                    processTransactions();
                     populateMonthsDropdown(); renderUI(); await fetchBalance(true, true);
                 }
             } catch (error) { console.error(error); }
@@ -1472,7 +1597,7 @@
 
     function populateMonthsDropdown() {
         const months = new Set();
-        transactions.forEach(t => { const d = new Date(t.date); months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); });
+        expandedTransactions.forEach(t => { const d = new Date(t.date); months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); });
         const sortedMonths = Array.from(months).sort().reverse();
         const currentVal = monthFilter.value;
         monthFilter.innerHTML = '<option value="all">כל הזמן</option>';
@@ -1484,11 +1609,55 @@
         if (currentVal && sortedMonths.includes(currentVal)) monthFilter.value = currentVal;
     }
 
+    function renderRecurringList() {
+        const recList = document.getElementById('recurring-list');
+        recList.innerHTML = '';
+        const recTxs = transactions.filter(t => t.type === 'recurring_expense');
+
+        if (recTxs.length === 0) {
+            recList.innerHTML = '<li class="empty-state"><i class="fas fa-inbox"></i> אין הוראות קבע פעילות</li>';
+            return;
+        }
+
+        recTxs.forEach((t, index) => {
+            const li = document.createElement('li');
+            li.classList.add('recurring-item');
+            li.style.animationDelay = `${index * 0.05}s`;
+
+            let tempDate = new Date(t.date);
+            let now = new Date();
+            while (tempDate <= now) {
+                let expectedMonth = (tempDate.getMonth() + 1) % 12;
+                tempDate.setMonth(tempDate.getMonth() + 1);
+                if (tempDate.getMonth() !== expectedMonth) tempDate.setDate(0);
+            }
+            const nextDateStr = tempDate.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            let cleanText = t.text.replace(' 💳', '').replace(' 🔄', '').trim();
+
+            li.innerHTML = `
+                <div class="details">
+                    <span class="date">חיוב הבא: ${nextDateStr}</span>
+                    <strong>${cleanText} (חיוב קבוע)</strong>
+                    <span class="category">${t.category}</span>
+                </div>
+                <div class="amount-controls">
+                    <span>-${currencySymbol}${t.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <button class="delete-btn" onclick="removeTransaction(${t.id})" title="בטל הוראת קבע"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `;
+            recList.appendChild(li);
+        });
+    }
+
     function renderUI() {
         list.innerHTML = '';
         const filterMonth = monthFilter.value || 'all';
         const searchTerm = searchInput.value.toLowerCase();
-        const filteredTransactions = transactions.filter(t => {
+
+        const filteredTransactions = expandedTransactions.filter(t => {
+            if (t.type === 'credit_expense' && t.text.includes('🔄')) return false;
+
             const d = new Date(t.date);
             const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             const displayDateStr = d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1498,10 +1667,12 @@
         if (filteredTransactions.length === 0) list.innerHTML = '<li class="empty-state"><i class="fas fa-inbox"></i>אין תנועות</li>';
         else [...filteredTransactions].reverse().forEach((t, index) => addTransactionDOM(t, index));
 
-        updateValues(filteredTransactions); updateChart(filteredTransactions); renderSmartGoals();
+        updateValues(filteredTransactions);
+        updateChart(expandedTransactions);
+        renderSmartGoals();
+        renderRecurringList();
     }
 
-    // הפונקציה ששודרגה עם כפתור ההפקדה המהירה ליעדים!
     function renderSmartGoals() {
         const container = document.getElementById('goals-container');
         container.innerHTML = '';
@@ -1560,10 +1731,16 @@
 
     function addTransactionDOM(transaction, index) {
         const isWithdrawal = transaction.type === 'income' && transaction.category.startsWith('משיכה מ: ');
-        const displayType = isWithdrawal ? 'withdrawal' : transaction.type;
+        let displayType = isWithdrawal ? 'withdrawal' : transaction.type;
+
+        if (displayType === 'recurring_history' || displayType === 'past_credit_expense') {
+            displayType = 'expense';
+        }
+
         let sign = displayType === 'income' ? '+' : displayType === 'withdrawal' ? '+' : displayType === 'expense' ? '-' : displayType === 'credit_expense' ? '-' : '→';
         const displayDate = new Date(transaction.date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const item = document.createElement('li'); item.classList.add(displayType); item.style.animationDelay = `${index * 0.05}s`;
+
         item.innerHTML = `<div class="details"><span class="date">${displayDate}</span><strong>${transaction.text}</strong><span class="category">${transaction.category}</span></div><div class="amount-controls"><span>${sign}${currencySymbol}${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span><button class="delete-btn" onclick="removeTransaction(${transaction.id})"><i class="fas fa-trash-alt"></i></button></div>`;
         list.appendChild(item);
     }
@@ -1571,15 +1748,10 @@
     function updateValues(filteredData) {
         const incomeTotal = filteredData.filter(item => item.type === 'income' && !item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
 
+        const expenseTotal = filteredData.filter(item => item.type === 'expense').reduce((acc, item) => acc + item.amount, 0);
+
         const now = new Date();
-
-        const expenseTotal = filteredData.filter(item => {
-            if (item.type === 'expense') return true;
-            if (item.type === 'credit_expense' && new Date(item.date) <= now) return true;
-            return false;
-        }).reduce((acc, item) => acc + item.amount, 0);
-
-        const futureCredit = filteredData.filter(item => item.type === 'credit_expense' && new Date(item.date) > now).reduce((acc, item) => acc + item.amount, 0);
+        const futureCredit = expandedTransactions.filter(item => item.type === 'credit_expense' && new Date(item.date) > now).reduce((acc, item) => acc + item.amount, 0);
 
         const savingsTotalRaw = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => acc + item.amount, 0);
         const withdrawalsTotal = filteredData.filter(item => item.type === 'income' && item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
@@ -1601,19 +1773,14 @@
         creditTotalUI.setAttribute('data-val', futureCredit);
     }
 
-    function updateChart(filteredData) {
+    function updateChart(allExpandedData) {
         const ctx = document.getElementById('expenseChart').getContext('2d');
-        const expenses = filteredData.filter(t => t.type === 'expense' || t.type === 'credit_expense');
+
+        const expenses = allExpandedData.filter(t => t.type === 'expense' || t.type === 'credit_expense' || t.type === 'recurring_history' || t.type === 'past_credit_expense');
         const categoryTotals = {};
 
         expenses.forEach(e => {
-            let label = '';
-            if (e.type === 'credit_expense') {
-                let desc = e.text.replace(' 💳', '').trim();
-                label = desc + ' (חיוב קרוב)';
-            } else {
-                label = e.category.replace(/[^א-תa-zA-Z\s]/g, '').trim();
-            }
+            let label = e.text; // הטקסט כבר מכיל את הסוגריים הנכונות
             categoryTotals[label] = (categoryTotals[label] || 0) + e.amount;
         });
 
@@ -1628,12 +1795,17 @@
     }
 
     function exportToCSV() {
-        if (transactions.length === 0) { showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.', false); return; }
+        if (expandedTransactions.length === 0) { showCustomAlert('ייצוא נכשל', 'אין נתונים לייצוא לקובץ.', false); return; }
         let csvContent = "data:text/csv;charset=utf-8,\uFEFFתאריך,סוג,קטגוריה,תיאור,סכום\n";
-        transactions.forEach(t => {
+        expandedTransactions.forEach(t => {
             const date = new Date(t.date).toLocaleDateString('he-IL');
             const isWithdrawal = t.type === 'income' && t.category.startsWith('משיכה מ: ');
-            const typeLabel = isWithdrawal ? 'משיכה מחיסכון' : t.type === 'income' ? 'הכנסה' : t.type === 'expense' ? 'הוצאה' : t.type === 'credit_expense' ? 'אשראי' : 'חיסכון';
+            const typeLabel = isWithdrawal ? 'משיכה מחיסכון' :
+                t.type === 'income' ? 'הכנסה' :
+                    t.type === 'expense' ? 'הוצאה מיידית' :
+                        t.type === 'recurring_history' ? 'הוצאה קבועה (ירדה)' :
+                            t.type === 'past_credit_expense' ? 'אשראי (ירד)' :
+                                t.type === 'credit_expense' ? 'חיוב קרוב' : 'חיסכון';
             let catLabel = t.category; if (isWithdrawal) catLabel = catLabel.replace('משיכה מ: ', '');
             csvContent += `"${date}","${typeLabel}","${catLabel}","${t.text}","${t.amount}"\n`;
         });

@@ -35,15 +35,26 @@ public class AccountController {
             } else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
                 currentBalance -= t.getAmount();
             } else if ("credit_expense".equals(t.getType())) {
-                // שימוש ב-toLocalDate() במקום בחיתוך טקסט
                 try {
                     LocalDate billingDate = t.getDate().toLocalDate();
-                    if (!billingDate.isAfter(today)) { // התאריך הגיע או עבר
+                    if (!billingDate.isAfter(today)) {
                         currentBalance -= t.getAmount();
                     }
                 } catch (Exception e) {
                     currentBalance -= t.getAmount();
                 }
+            } else if ("recurring_expense".equals(t.getType())) {
+                // מנגנון הוראת הקבע: מחשב ומוריד על כל חודש שעבר!
+                try {
+                    LocalDate billingDate = t.getDate().toLocalDate();
+                    LocalDate tempDate = billingDate;
+                    int limit = 0; // הגנה מלולאה אינסופית
+                    while (!tempDate.isAfter(today) && limit < 240) {
+                        currentBalance -= t.getAmount();
+                        tempDate = tempDate.plusMonths(1);
+                        limit++;
+                    }
+                } catch (Exception e) {}
             }
         }
 
@@ -67,7 +78,6 @@ public class AccountController {
             } else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
                 transactionsTotal -= t.getAmount();
             } else if ("credit_expense".equals(t.getType())) {
-                // שימוש ב-toLocalDate() במקום בחיתוך טקסט
                 try {
                     LocalDate billingDate = t.getDate().toLocalDate();
                     if (!billingDate.isAfter(today)) {
@@ -76,6 +86,17 @@ public class AccountController {
                 } catch (Exception e) {
                     transactionsTotal -= t.getAmount();
                 }
+            } else if ("recurring_expense".equals(t.getType())) {
+                try {
+                    LocalDate billingDate = t.getDate().toLocalDate();
+                    LocalDate tempDate = billingDate;
+                    int limit = 0;
+                    while (!tempDate.isAfter(today) && limit < 240) {
+                        transactionsTotal -= t.getAmount();
+                        tempDate = tempDate.plusMonths(1);
+                        limit++;
+                    }
+                } catch (Exception e) {}
             }
         }
 

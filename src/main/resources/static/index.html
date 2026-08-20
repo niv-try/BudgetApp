@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ניהול תקציב חכם | ניב אגוז</title>
+    <meta name="google-site-verification" content="18YJgYCyzeMkPIard5sGBl9Rm404z0ZX7I-kasbQlQ8" />
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1410,81 +1411,51 @@
         } catch (error) { console.error(error); }
     }
 
+    // התיקון המלא והנקי לפונקציית fetchBalance שמזהה את שם המשתמש האמיתי מהשרת
     async function fetchBalance(animate = true, playSound = false) {
+        let newBal = currentBalanceAmount || 0;
         try {
             const res = await fetch(ACCOUNT_API_URL);
             if(res.ok) {
                 const acc = await res.json();
-                let needServerSave = false;
 
-                if (acc.username && currentUsername !== acc.username) {
-                    currentUsername = acc.username;
-                    localStorage.setItem('budgetAppUsername', currentUsername);
-                    profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
-                }
+                let realUsername = acc.ownerUsername || acc.username;
 
-                if (acc.lastLogin) {
-                    profileData.xp = acc.xp;
-                    profileData.streak = acc.streak;
-                    profileData.lastLogin = acc.lastLogin;
-                } else {
-                    profileData.xp = 20;
-                    profileData.streak = 1;
-                    profileData.lastLogin = new Date().toISOString().split('T')[0];
-                    needServerSave = true;
-                }
-
-                const todayStr = new Date().toISOString().split('T')[0];
-                if (profileData.lastLogin !== todayStr) {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-                    if (profileData.lastLogin === yesterdayStr) {
-                        profileData.streak++;
-                    } else {
-                        profileData.streak = 1;
+                if (realUsername && realUsername !== 'אורח') {
+                    if (currentUsername !== realUsername) {
+                        currentUsername = realUsername;
+                        localStorage.setItem('budgetAppUsername', currentUsername);
+                        profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
                     }
-                    profileData.lastLogin = todayStr;
-                    needServerSave = true;
+
+                    if (acc.profilePic) {
+                        profileData.profilePic = acc.profilePic;
+                    } else {
+                        profileData.profilePic = '';
+                    }
+
+                    loadProfileUI();
                 }
-
-                if (acc.badges) {
-                    let serverBadges = acc.badges.split(',').filter(b => b !== '');
-                    localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(serverBadges));
-                } else {
-                    localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify([]));
-                }
-
-                if (acc.profilePic && acc.profilePic !== profileData.profilePic) {
-                    profileData.profilePic = acc.profilePic;
-                }
-
-                localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
-                loadProfileUI();
-                await updateGamingStats(0);
-
-                if (needServerSave) {
-                    await saveProfileData();
-                }
-
-                let newBal = acc.balance || 0;
-                let oldBal = currentBalanceAmount || 0;
-                currentBalanceAmount = newBal;
-
-                balanceUI.style.direction = 'ltr';
-                balanceUI.style.display = 'inline-block';
-
-                if (animate && oldBal !== newBal) {
-                    animateValue(balanceUI, oldBal, newBal, 1500, playSound);
-                } else {
-                    let sign = newBal < 0 ? '-' : '';
-                    balanceUI.innerText = sign + currencySymbol + Math.abs(newBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                }
-
-                renderBadges();
+                newBal = acc.balance || 0;
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error("Server error", e);
+        }
+
+        updateGamingStats(0);
+
+        let oldBal = currentBalanceAmount || 0;
+        currentBalanceAmount = newBal;
+        balanceUI.style.direction = 'ltr';
+        balanceUI.style.display = 'inline-block';
+
+        if (animate && oldBal !== newBal) {
+            animateValue(balanceUI, oldBal, newBal, 1500, playSound);
+        } else {
+            let sign = newBal < 0 ? '-' : '';
+            balanceUI.innerText = sign + currencySymbol + Math.abs(newBal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        renderBadges();
     }
 
     async function updateManualBalance(textValue) {

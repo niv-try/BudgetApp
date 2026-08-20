@@ -3,6 +3,8 @@ package com.example.budgetapp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -25,15 +27,26 @@ public class AccountController {
         double currentBalance = account.getBalance();
 
         List<Transaction> transactions = transactionRepository.findByOwnerUsername(username);
+        LocalDate today = LocalDate.now();
+
         for (Transaction t : transactions) {
             if ("income".equals(t.getType())) {
                 currentBalance += t.getAmount();
             } else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
                 currentBalance -= t.getAmount();
+            } else if ("credit_expense".equals(t.getType())) {
+                // שימוש ב-toLocalDate() במקום בחיתוך טקסט
+                try {
+                    LocalDate billingDate = t.getDate().toLocalDate();
+                    if (!billingDate.isAfter(today)) { // התאריך הגיע או עבר
+                        currentBalance -= t.getAmount();
+                    }
+                } catch (Exception e) {
+                    currentBalance -= t.getAmount();
+                }
             }
         }
 
-        // מחזירים את האובייקט המקורי כדי שהאתר יקבל גם את המדליות
         account.setBalance(currentBalance);
         return account;
     }
@@ -46,11 +59,23 @@ public class AccountController {
 
         double transactionsTotal = 0;
         List<Transaction> transactions = transactionRepository.findByOwnerUsername(username);
+        LocalDate today = LocalDate.now();
+
         for (Transaction t : transactions) {
             if ("income".equals(t.getType())) {
                 transactionsTotal += t.getAmount();
             } else if ("expense".equals(t.getType()) || "savings".equals(t.getType())) {
                 transactionsTotal -= t.getAmount();
+            } else if ("credit_expense".equals(t.getType())) {
+                // שימוש ב-toLocalDate() במקום בחיתוך טקסט
+                try {
+                    LocalDate billingDate = t.getDate().toLocalDate();
+                    if (!billingDate.isAfter(today)) {
+                        transactionsTotal -= t.getAmount();
+                    }
+                } catch (Exception e) {
+                    transactionsTotal -= t.getAmount();
+                }
             }
         }
 
@@ -60,14 +85,12 @@ public class AccountController {
         return repository.save(account);
     }
 
-    // --- הנתיב החדש ששומר אך ורק את המדליות! ---
     @PostMapping("/badges")
     public void saveBadges(@RequestBody List<String> badges) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
 
-        // הופך את רשימת המדליות לטקסט ושומר בטבלה
         account.setBadges(String.join(",", badges));
         repository.save(account);
     }
@@ -78,7 +101,6 @@ public class AccountController {
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
 
-        // שומר את כל נתוני הפרופיל (תמונה, XP, ימים ורצף) במסד הנתונים
         if (payload.containsKey("profilePic") && payload.get("profilePic") != null) {
             account.setProfilePic(payload.get("profilePic").toString());
         }

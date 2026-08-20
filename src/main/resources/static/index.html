@@ -102,13 +102,38 @@
         .profile-text .user-name i { color: #f59e0b; animation: wave 2.5s infinite; transform-origin: bottom center; }
         @keyframes wave { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(20deg); } }
 
+        /* כפתור התנתקות קטן בפרופיל */
+        .logout-small-btn {
+            margin-right: auto;
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .logout-small-btn:hover {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
         /* --- עיצוב הגיימיפיקציה (רמות וסטריקים) --- */
         .gaming-stats { display: flex; gap: 15px; margin-top: 8px; flex-wrap: wrap; }
         .stat-pill {
             background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 20px;
             font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px;
             border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
         }
         .stat-pill .fire { color: #f97316; filter: drop-shadow(0 0 5px rgba(249, 115, 22, 0.5)); }
         .stat-pill .star { color: #facc15; filter: drop-shadow(0 0 5px rgba(250, 204, 21, 0.5)); }
@@ -124,13 +149,20 @@
             color: #facc15 !important;
         }
 
-        .level-progress-wrapper {
-            width: 100px; height: 8px; background: rgba(255,255,255,0.1);
-            border-radius: 4px; overflow: hidden; position: relative;
+        /* --- האנימציה של קפיצת ה-XP --- */
+        @keyframes xpPop {
+            0% { transform: scale(1); color: #f8fafc; text-shadow: none; }
+            50% { transform: scale(1.4); color: #facc15; text-shadow: 0 0 10px rgba(250, 204, 21, 0.8); }
+            100% { transform: scale(1); color: #f8fafc; text-shadow: none; }
         }
+        .xp-pop-effect {
+            animation: xpPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         .level-progress-fill {
-            height: 100%; background: linear-gradient(90deg, #facc15, #f59e0b);
-            width: 0%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+            position: absolute; top: 0; right: 0; height: 100%;
+            background: linear-gradient(90deg, rgba(250, 204, 21, 0.25), rgba(245, 158, 11, 0.45));
+            width: 0%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); z-index: 0;
         }
 
         /* --- עיצוב המדליות --- */
@@ -220,10 +252,10 @@
             flex: 1; min-width: 150px;
         }
         .control-box:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
-        .control-box i { color: var(--text-muted); font-size: 1rem; }
+        .control-box i { color: var(--text-muted); font-size: 1.2rem; }
 
         .control-box select {
-            border: none; background-color: transparent; font-family: inherit; font-size: 1rem;
+            border: none; background-color: transparent; font-family: inherit; font-size: 1.15rem;
             font-weight: 600; color: var(--text-main); outline: none; cursor: pointer; width: 100%;
         }
         select option { background: #1e293b; color: #f8fafc; }
@@ -231,7 +263,8 @@
         .export-btn {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white;
             border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 12px;
-            font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            font-weight: 700; font-size: 1.15rem;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
             display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease;
             flex: 1; min-width: 100px;
         }
@@ -399,6 +432,13 @@
         }
         .delete-btn:hover { background: rgba(239, 68, 68, 0.3); color: #fff; transform: scale(1.1); }
 
+        /* כפתור הפקדה מהירה */
+        .quick-deposit-btn {
+            background: rgba(16, 185, 129, 0.1); color: #34d399; border: none; width: 28px; height: 28px;
+            border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+        }
+        .quick-deposit-btn:hover { background: rgba(16, 185, 129, 0.3); color: #fff; transform: scale(1.1); }
+
         .chart-container { position: relative; height: 220px; width: 100%; margin-top: 15px;}
         .empty-state { text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 1rem;}
 
@@ -426,6 +466,7 @@
 
         @media (max-width: 768px) {
             .profile-header { padding: 15px; flex-direction: column; align-items: flex-start;}
+            .logout-small-btn { position: static; margin-top: 10px; width: 100%; justify-content: center; }
             .badges-cabinet { margin-top: 10px; width: 100%; justify-content: center; }
             .profile-pic-wrapper { width: 60px; height: 60px; }
             .profile-text .user-name { font-size: 1.4rem; }
@@ -472,6 +513,20 @@
     </div>
 </div>
 
+<!-- המודל החדש של ההפקדה המהירה -->
+<div id="quick-deposit-overlay" class="confirm-overlay">
+    <div class="confirm-modal">
+        <div class="confirm-icon" style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.4);"><i class="fas fa-piggy-bank"></i></div>
+        <h3 class="confirm-title">הפקדה מהירה ליעד</h3>
+        <p class="confirm-message" id="quick-deposit-goal-name"></p>
+        <input type="text" id="quick-deposit-amount" placeholder="סכום להפקדה" inputmode="decimal" style="width: 100%; margin-bottom: 20px; text-align: center; font-size: 1.2rem; font-weight: bold;">
+        <div class="confirm-actions">
+            <button class="btn-cancel" onclick="closeQuickDeposit()">ביטול</button>
+            <button class="btn-success" onclick="submitQuickDeposit()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">הפקד כעת</button>
+        </div>
+    </div>
+</div>
+
 <div class="container">
 
     <div class="profile-header">
@@ -494,18 +549,21 @@
                     <i class="fas fa-fire fire"></i> <span id="streak-counter">0 ימים</span>
                 </div>
                 <div style="flex:1; min-width: 120px;">
-                    <div class="stat-pill" style="justify-content: space-between; margin-bottom: 4px;" title="רמת משתמש (הוסף פעולות כדי לעלות רמה)">
-                        <div><i class="fas fa-star star"></i> <span>רמה <span id="level-counter">1</span></span></div>
-                        <span style="font-size: 0.8rem; color: #94a3b8;" id="xp-text">0/100 XP</span>
-                    </div>
-                    <div class="level-progress-wrapper">
+                    <div class="stat-pill" style="position: relative; overflow: hidden; justify-content: space-between;" title="רמת משתמש (הוסף פעולות כדי לעלות רמה)">
                         <div class="level-progress-fill" id="level-progress"></div>
+                        <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 8px;"><i class="fas fa-star star"></i> <span>רמה <span id="level-counter">1</span></span></div>
+                        <span style="font-size: 0.85rem; color: #f8fafc; position: relative; z-index: 1; font-weight: 800; display: inline-block; transition: all 0.3s ease;" id="xp-text">0/100 XP</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="badges-cabinet" id="badges-cabinet"></div>
+
+        <!-- כפתור ההתנתקות החדש והמעוצב -->
+        <a href="/logout" onclick="localStorage.removeItem('budgetAppUsername');" class="logout-small-btn" title="התנתק מהחשבון">
+            <i class="fas fa-sign-out-alt"></i> התנתק
+        </a>
     </div>
 
     <div class="header">
@@ -524,9 +582,6 @@
             <button class="export-btn" onclick="exportToCSV()">
                 <i class="fas fa-file-excel"></i> ייצוא
             </button>
-            <a href="/logout" onclick="localStorage.removeItem('budgetAppUsername');" class="export-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); text-decoration: none;">
-                <i class="fas fa-sign-out-alt"></i> התנתק
-            </a>
         </div>
     </div>
 
@@ -710,7 +765,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadProfileUI();
-        // הסרנו מכאן את העדכון העיוור כדי שהשרת יחליט כמה XP יש בהתחלה!
     });
 
     async function saveProfileData() {
@@ -805,14 +859,78 @@
         closeCustomConfirm();
     });
 
+    // --- הפונקציות להפקדה מהירה ---
+    let quickDepositGoal = null;
+    function openQuickDeposit(goalName) {
+        quickDepositGoal = goalName;
+        document.getElementById('quick-deposit-goal-name').innerText = 'לתוך: ' + goalName;
+        document.getElementById('quick-deposit-amount').value = '';
+        document.getElementById('quick-deposit-overlay').classList.add('show');
+        setTimeout(() => document.getElementById('quick-deposit-amount').focus(), 100);
+    }
+
+    function closeQuickDeposit() {
+        document.getElementById('quick-deposit-overlay').classList.remove('show');
+        quickDepositGoal = null;
+    }
+
+    async function submitQuickDeposit() {
+        const amtStr = document.getElementById('quick-deposit-amount').value.replace(/,/g, '');
+        const txAmount = parseFloat(amtStr);
+        if (isNaN(txAmount) || txAmount <= 0) {
+            showCustomAlert('שגיאה', 'נא להזין סכום תקין.', false);
+            return;
+        }
+        if (txAmount > currentBalanceAmount) {
+            showCustomAlert('חריגה מהתקציב', `אין מספיק כסף בעו"ש כדי להפקיד את הסכום הזה!`, false);
+            return;
+        }
+
+        const transaction = { type: 'savings', text: 'הפקדה מהירה', category: quickDepositGoal, amount: txAmount, date: new Date().toISOString().substring(0, 19) };
+
+        try {
+            const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(transaction) });
+            if(response.ok) {
+                const savedTx = await response.json();
+                savingsSound.play().catch(e => {});
+                transactions.push(savedTx);
+                populateMonthsDropdown(); renderUI();
+                updateGamingStats(10);
+                fetchBalance(true, true);
+                closeQuickDeposit();
+                showCustomAlert('הפקדה בוצעה!', `הופקדו ${currencySymbol}${txAmount.toLocaleString('en-US')} ליעד בהצלחה.`, true);
+            }
+        } catch (error) { console.error(error); }
+    }
+    // ---------------------------------
+
     function updateGamingStats(addXP = 0) {
         if (currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
 
         const oldLevel = Math.floor((profileData.xp || 0) / 100) + 1;
+        let xpGained = false;
 
         if (addXP > 0) {
             profileData.xp = (profileData.xp || 0) + addXP;
-            saveProfileData(); // שומר לשרת מיד כשיש פעולה
+            saveProfileData();
+            xpGained = true;
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (profileData.lastLogin !== todayStr && addXP === 0) { // תופס רק את הכניסה היומית מהשרת או בריענון
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (profileData.lastLogin === yesterdayStr) {
+                profileData.streak = (profileData.streak || 0) + 1;
+            } else {
+                profileData.streak = 1;
+            }
+            profileData.xp = (profileData.xp || 0) + 20;
+            profileData.lastLogin = todayStr;
+            xpGained = true;
+            saveProfileData();
         }
 
         const currentLevel = Math.floor((profileData.xp || 0) / 100) + 1;
@@ -834,6 +952,16 @@
         document.getElementById('streak-counter').innerText = `${profileData.streak || 0} ימים`;
         document.getElementById('level-counter').innerText = currentLevel;
         document.getElementById('xp-text').innerText = `${xpIntoLevel}/100 XP`;
+
+        // הפעלת האנימציה של ה-XP
+        if (xpGained) {
+            const xpTextEl = document.getElementById('xp-text');
+            if (xpTextEl) {
+                xpTextEl.classList.remove('xp-pop-effect');
+                void xpTextEl.offsetWidth; // מאלץ את הדפדפן להתחיל את האנימציה מחדש
+                xpTextEl.classList.add('xp-pop-effect');
+            }
+        }
 
         setTimeout(() => {
             const progress = document.getElementById('level-progress');
@@ -996,6 +1124,7 @@
 
     document.getElementById('amount').addEventListener('input', formatInputLive);
     document.getElementById('goal-amount').addEventListener('input', formatInputLive);
+    document.getElementById('quick-deposit-amount').addEventListener('input', formatInputLive); // הוספנו חיות גם להפקדה המהירה!
 
     balanceUI.addEventListener('focus', function() { this.innerText = this.innerText.replace(currencySymbol, ''); });
     balanceUI.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); this.blur(); } });
@@ -1096,20 +1225,9 @@
                     needServerSave = true;
                 }
 
-                // בדיקת התחברות יומית ומתן בונוס מסונכרן
+                // בדיקת התחברות יומית ומתן בונוס מסונכרן (מטופל גם ב-updateGamingStats ליתר ביטחון, כאן נבדוק אם כדאי לשמור שוב)
                 const todayStr = new Date().toISOString().split('T')[0];
                 if (profileData.lastLogin !== todayStr) {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-                    if (profileData.lastLogin === yesterdayStr) {
-                        profileData.streak++;
-                    } else {
-                        profileData.streak = 1;
-                    }
-                    profileData.xp += 20; // בונוס התחברות יומית
-                    profileData.lastLogin = todayStr;
                     needServerSave = true;
                 }
 
@@ -1131,7 +1249,7 @@
                 updateGamingStats(0);
 
                 if (needServerSave) {
-                    saveProfileData(); // שולח בחזרה לשרת כדי לקבע את ההתחברות הראשונה/היומית
+                    saveProfileData();
                 }
 
                 let newBal = acc.balance || 0;
@@ -1335,6 +1453,7 @@
         updateValues(filteredTransactions); updateChart(filteredTransactions); renderSmartGoals();
     }
 
+    // הפונקציה ששודרגה עם כפתור ההפקדה המהירה ליעדים!
     function renderSmartGoals() {
         const container = document.getElementById('goals-container');
         container.innerHTML = '';
@@ -1366,7 +1485,27 @@
             }
 
             const card = document.createElement('div'); card.className = 'smart-goal-card';
-            card.innerHTML = `<div class="goal-header"><div><div class="goal-title">${goal.name}</div><div class="goal-target-date">יעד: ${displayMonth || 'הושלם!'}</div></div><button class="delete-btn" onclick="deleteSmartGoal(${goal.id})" title="מחק יעד (ללא השלמה)"><i class="fas fa-times"></i></button></div><div class="goal-stats"><span class="goal-saved">${currencySymbol}${savedAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span><span class="goal-target">מתוך ${currencySymbol}${goal.targetAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span></div><div class="progress-bar-bg"><div class="progress-bar-fill"></div></div><div class="monthly-recommendation">${recommendationText}</div>${actionButton}`;
+
+            // עיצוב מחדש של ה-Header של היעד כדי להכיל את ההפקדה המהירה
+            card.innerHTML = `
+                <div class="goal-header" style="align-items: center;">
+                    <div>
+                        <div class="goal-title">${goal.name}</div>
+                        <div class="goal-target-date">יעד: ${displayMonth || 'הושלם!'}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        ${remainingToSave > 0 ? `<button class="quick-deposit-btn" onclick="openQuickDeposit('${goal.name}')" title="הפקדה מהירה ליעד"><i class="fas fa-plus"></i></button>` : ''}
+                        <button class="delete-btn" onclick="deleteSmartGoal(${goal.id})" title="מחק יעד (ללא השלמה)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="goal-stats">
+                    <span class="goal-saved">${currencySymbol}${savedAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
+                    <span class="goal-target">מתוך ${currencySymbol}${goal.targetAmount.toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
+                </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+                <div class="monthly-recommendation">${recommendationText}</div>
+                ${actionButton}`;
+
             container.appendChild(card);
             setTimeout(() => { const fill = card.querySelector('.progress-bar-fill'); if(fill) fill.style.width = `${percentage}%`; }, 100);
         });

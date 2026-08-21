@@ -510,41 +510,57 @@
         .add-goal-form { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 20px;}
         .add-goal-form h3 { margin: 0 0 15px 0; font-size: 1rem; color: var(--text-muted); }
 
+        /* --- התאמות למסכים בינוניים (טאבלטים) --- */
         @media (max-width: 900px) {
-            .dashboard { grid-template-columns: repeat(2, 1fr); }
             .main-content { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: repeat(2, 1fr); }
+            /* כרטיסיית חיוב קרוב (ה-5) תתפרס על כל הרוחב כדי לא לשבור את הגריד */
+            .dashboard .card:last-child { grid-column: 1 / -1; }
         }
 
+        /* --- התאמות למסכים קטנים (סמארטפונים) --- */
         @media (max-width: 768px) {
-            .profile-header { padding: 15px; flex-direction: column; align-items: flex-start;}
-            .logout-small-btn { position: static; margin-top: 10px; width: 100%; justify-content: center; }
-            .badges-cabinet { margin-top: 10px; width: 100%; justify-content: center; }
-            .profile-pic-wrapper { width: 60px; height: 60px; }
-            .profile-text .user-name { font-size: 1.4rem; }
+            body { padding: 15px 8px; }
 
-            .top-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .top-controls .control-box, .top-controls .export-btn { width: 100%; justify-content: center; }
+            /* סידור מחדש של הפרופיל שיהיה ממורכז */
+            .profile-header { padding: 15px; flex-direction: column; align-items: center; text-align: center; }
+            .profile-text { align-items: center; }
+            .profile-text .user-name { font-size: 1.6rem; justify-content: center; }
+            .gaming-stats { justify-content: center; width: 100%; }
+            .badges-cabinet { flex-wrap: wrap; justify-content: center; margin-top: 10px; width: 100%; }
+            .logout-small-btn { margin: 15px auto 0 auto; width: 100%; justify-content: center; }
+
+            /* תפריטים עליונים בטור במקום בשורה */
+            .top-controls { flex-direction: column; align-items: stretch; display: flex; }
+            .top-controls .control-box, .top-controls .export-btn { width: auto; flex: 1; justify-content: center; }
+
+            /* סידור כרטיסיות התקציב */
+            .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .dashboard .card.main-card, .dashboard .card.savings-card { grid-column: 1 / -1; }
+            .card p { font-size: 1.4rem; word-break: break-word; } /* מניעת גלישת טקסט במספרים גדולים */
+            .card i { font-size: 1.5rem; }
+
+            /* סידור טפסים */
             .form-row { flex-direction: column; gap: 15px; }
-            .form-group { width: 100%; max-width: 100% !important; }
-            .list li { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .amount-controls { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
-            .amount-controls span { font-size: 1.2rem; }
+            .form-group { width: 100%; max-width: 100% !important; display: block; }
+            .date-dropdown { min-width: 100%; right: 0; left: 0; }
+
+            /* סידור היסטוריית הפעולות */
+            .list li { flex-direction: column; align-items: stretch; gap: 10px; padding: 15px; }
+            .details strong { word-break: break-word; white-space: normal; line-height: 1.3; } /* שבירת שורות בטקסט ארוך */
+            .amount-controls { flex-direction: row; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 5px; width: 100%; }
+            .amount-controls span { font-size: 1.15rem; }
+
+            /* סידור יעדים חכמים */
             .smart-goals-container { grid-template-columns: 1fr; }
+            .goal-header { flex-direction: column; gap: 10px; align-items: stretch; }
+            .goal-header > div:last-child { align-self: flex-end; }
         }
 
-        /* התאמה אופטימלית למסכים קטנים מאוד (ניידים רגילים) */
-        @media (max-width: 500px) {
-            .dashboard { grid-template-columns: 1fr 1fr; }
-            .dashboard .card.main-card { grid-column: 1 / -1; } /* עו"ש על כל הרוחב */
-            .dashboard .card.savings-card { grid-column: 1 / -1; } /* חסכונות על כל הרוחב */
-            .form-row { flex-direction: column; gap: 12px; }
-            .date-dropdown { min-width: 100%; right: 0; }
-        }
-
-        @media (min-width: 900px) {
-            .main-content { grid-template-columns: 1.3fr 1fr; }
-            body { padding: 40px 15px; }
-            .card p { font-size: 1.7rem; }
+        /* --- סמארטפונים צרים במיוחד --- */
+        @media (max-width: 400px) {
+            .dashboard { grid-template-columns: 1fr; } /* כל הכרטיסיות בטור אחד */
+            .dashboard .card { grid-column: 1 / -1 !important; }
         }
     </style>
 </head>
@@ -1411,7 +1427,6 @@
         } catch (error) { console.error(error); }
     }
 
-    // התיקון המלא והנקי לפונקציית fetchBalance שמזהה את שם המשתמש האמיתי מהשרת
     async function fetchBalance(animate = true, playSound = false) {
         let newBal = currentBalanceAmount || 0;
         try {
@@ -1428,11 +1443,12 @@
                         profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
                     }
 
-                    if (acc.profilePic) {
-                        profileData.profilePic = acc.profilePic;
-                    } else {
-                        profileData.profilePic = '';
-                    }
+                    // התיקון: שואבים את הנתונים בכל מצב בלי תנאים מיותרים שיכולים לדרוס שמירות!
+                    profileData.xp = parseInt(acc.xp) || 0;
+                    profileData.streak = parseInt(acc.streak) || 0;
+                    profileData.lastLogin = acc.lastLogin || '';
+                    profileData.badges = acc.badges ? acc.badges.split(',').filter(b=>b) : [];
+                    if(acc.profilePic) profileData.profilePic = acc.profilePic;
 
                     loadProfileUI();
                 }

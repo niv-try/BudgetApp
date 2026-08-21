@@ -372,6 +372,16 @@
         }
         .date-dropdown.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
+        /* התיקון שביקשת: פתיחת תפריט התאריך של אשראי והוראות קבע כלפי מעלה */
+        #credit-date-dropdown {
+            top: auto;
+            bottom: calc(100% + 5px);
+            transform: translateY(10px);
+        }
+        #credit-date-dropdown.show {
+            transform: translateY(0);
+        }
+
         /* --- עיצוב כפתור "ללא תאריך" --- */
         .no-date-btn {
             width: 100%; padding: 12px;
@@ -1843,8 +1853,9 @@
         const now = new Date();
         const futureCredit = expandedTransactions.filter(item => item.type === 'credit_expense' && new Date(item.date) > now).reduce((acc, item) => acc + item.amount, 0);
 
-        const savingsTotalRaw = filteredData.filter(item => item.type === 'savings').reduce((acc, item) => acc + item.amount, 0);
-        const withdrawalsTotal = filteredData.filter(item => item.type === 'income' && item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
+        // התיקון: חסכונות מחושבים מתוך כלל הפעולות (transactions) ולא רק מהחודש המסונן
+        const savingsTotalRaw = transactions.filter(item => item.type === 'savings').reduce((acc, item) => acc + item.amount, 0);
+        const withdrawalsTotal = transactions.filter(item => item.type === 'income' && item.category.startsWith('משיכה מ: ')).reduce((acc, item) => acc + item.amount, 0);
         const savingsTotal = savingsTotalRaw - withdrawalsTotal;
 
         const oldSavings = parseFloat(savingsTotalUI.getAttribute('data-val'));

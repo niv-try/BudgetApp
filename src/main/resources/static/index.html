@@ -1366,6 +1366,7 @@
                 let tempDate = new Date(startDate);
                 let limit = 0;
 
+                // 1. מחשב את כל חיובי העבר שירדו עד היום
                 while (tempDate <= now && limit < 240) {
                     expandedTransactions.push({
                         ...t,
@@ -1380,15 +1381,16 @@
                     limit++;
                 }
 
-                // מציג בחיוב קרוב אך ורק אם החיוב הבא חל בחודש הנוכחי
-                if (tempDate.getMonth() === now.getMonth() && tempDate.getFullYear() === now.getFullYear()) {
+                // 2. התיקון: תמיד דוחף את הפעימה הבאה בתור (שגדולה מהיום) לכרטיסיית "חיוב קרוב"!
+                if (limit < 240) {
                     expandedTransactions.push({
                         ...t,
                         date: tempDate.toISOString(),
-                        type: 'credit_expense',
+                        type: 'credit_expense', // סיווג כאשראי עתידי כדי שייכנס לכרטיסייה הצהובה
                         text: cleanText + ' (חיוב קרוב)'
                     });
                 }
+
             } else if (t.type === 'credit_expense') {
                 let isPast = new Date(t.date) <= now;
                 expandedTransactions.push({
@@ -1409,6 +1411,7 @@
             }
         });
 
+        // ממיין הכל לפי תאריכים
         expandedTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 

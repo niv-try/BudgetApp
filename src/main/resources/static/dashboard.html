@@ -530,38 +530,43 @@
 
         /* --- התאמות למסכים קטנים (סמארטפונים) --- */
         @media (max-width: 768px) {
-            body { padding: 15px 8px; }
+            body { padding: 12px 8px; }
 
-            /* סידור מחדש של הפרופיל שיהיה ממורכז */
-            .profile-header { padding: 15px; flex-direction: column; align-items: center; text-align: center; }
-            .profile-text { align-items: center; }
-            .profile-text .user-name { font-size: 1.6rem; justify-content: center; }
-            .gaming-stats { justify-content: center; width: 100%; }
-            .badges-cabinet { flex-wrap: wrap; justify-content: center; margin-top: 10px; width: 100%; }
-            .logout-small-btn { margin: 15px auto 0 auto; width: 100%; justify-content: center; }
+            /* 1. פרופיל קומפקטי וחסכוני במקום אנכי */
+            .profile-header { padding: 15px; flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: flex-start; text-align: right; }
+            .profile-pic-wrapper { width: 60px; height: 60px; margin: 0; }
+            .profile-text { flex: 1; min-width: 150px; align-items: flex-start; }
+            .profile-text .user-name { font-size: 1.4rem; justify-content: flex-start; }
+            .gaming-stats { justify-content: flex-start; gap: 8px; margin-top: 5px; width: 100%; }
+            .stat-pill { padding: 4px 10px; font-size: 0.85rem; }
 
-            /* תפריטים עליונים בטור במקום בשורה */
-            .top-controls { flex-direction: column; align-items: stretch; display: flex; }
-            .top-controls .control-box, .top-controls .export-btn { width: auto; flex: 1; justify-content: center; }
+            .badges-cabinet { flex: 1; padding: 8px 12px; margin: 0; min-width: auto; justify-content: center; order: 3; }
+            .logout-small-btn { width: auto; margin: 0 !important; flex-grow: 1; justify-content: center; order: 4; padding: 8px; }
 
-            /* סידור כרטיסיות התקציב */
+            /* 2. תפריטים עליונים בשורה אחת (חצי חצי) במקום בטור ארוך */
+            .top-controls { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 10px; display: flex; }
+            .top-controls .control-box { flex: 1; min-width: 45%; padding: 8px 5px; justify-content: center; margin: 0; }
+            .top-controls .control-box select { font-size: 1rem; text-align: center; padding-left: 25px; }
+            .top-controls .export-btn { width: 100%; flex: 100%; padding: 10px; margin-top: 0; }
+
+            /* 3. סידור כרטיסיות התקציב */
             .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .dashboard .card.main-card, .dashboard .card.savings-card { grid-column: 1 / -1; }
-            .card p { font-size: 1.4rem; word-break: break-word; } /* מניעת גלישת טקסט במספרים גדולים */
-            .card i { font-size: 1.5rem; }
+            .dashboard .card.main-card, .dashboard .card.savings-card { grid-column: 1 / -1; padding: 15px; }
+            .card { padding: 15px 10px; }
+            .card p { font-size: 1.3rem; word-break: break-word; }
+            .card i { font-size: 1.4rem; margin-bottom: 5px; }
 
-            /* סידור טפסים */
-            .form-row { flex-direction: column; gap: 15px; }
+            /* 4. סידור טפסים */
+            .form-row { flex-direction: column; gap: 12px; margin-bottom: 12px; }
             .form-group { width: 100%; max-width: 100% !important; display: block; }
             .date-dropdown { min-width: 100%; right: 0; left: 0; }
 
-            /* סידור היסטוריית הפעולות */
-            .list li { flex-direction: column; align-items: stretch; gap: 10px; padding: 15px; }
-            .details strong { word-break: break-word; white-space: normal; line-height: 1.3; } /* שבירת שורות בטקסט ארוך */
-            .amount-controls { flex-direction: row; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 5px; width: 100%; }
-            .amount-controls span { font-size: 1.15rem; }
+            /* 5. סידור היסטוריית הפעולות */
+            .list li { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
+            .details strong { word-break: break-word; white-space: normal; line-height: 1.3; }
+            .amount-controls { flex-direction: row; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 5px; width: 100%; }
+            .amount-controls span { font-size: 1.1rem; }
 
-            /* סידור יעדים חכמים */
             .smart-goals-container { grid-template-columns: 1fr; }
             .goal-header { flex-direction: column; gap: 10px; align-items: stretch; }
             .goal-header > div:last-child { align-self: flex-end; }

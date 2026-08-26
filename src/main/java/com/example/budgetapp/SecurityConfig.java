@@ -12,7 +12,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // מגדיר ל-Spring להצפין את הסיסמאות (חובה בשביל להתחבר)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -23,20 +22,22 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // פותח גישה חופשית למסך ההתחברות וההרשמה
-                        .requestMatchers("/login.html", "/register.html", "/api/auth/register").permitAll()
+                        // התיקון ה-1: פותח גישה חופשית לגוגל ולכולם לעמוד הבית (index) ולמסכי ההתחברות
+                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/api/auth/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login.html")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/index.html", true)
+                        // התיקון ה-2: לאחר התחברות מוצלחת, המשתמש מועבר לאפליקציה (dashboard)
+                        .defaultSuccessUrl("/dashboard.html", true)
                         .failureUrl("/login.html?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login.html")
+                        // כשמתנתקים, חוזרים לעמוד הבית הראשי והיפה
+                        .logoutSuccessUrl("/index.html")
                         .permitAll()
                 );
 

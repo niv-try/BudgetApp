@@ -1230,7 +1230,17 @@
     }
 
     function toggleDatePicker(dropdownId) {
-        document.getElementById(dropdownId).classList.toggle('show');
+        // קודם כל, מחזיר את כל הפאנלים לשכבה אחורית שווה
+        document.querySelectorAll('.panel').forEach(p => p.style.zIndex = '50');
+
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.classList.toggle('show');
+
+        // ברגע שהתפריט נפתח, מקפיץ את הפאנל הספציפי שלו הכי קדימה שאפשר
+        if (dropdown.classList.contains('show')) {
+            const parentPanel = dropdown.closest('.panel');
+            if (parentPanel) parentPanel.style.zIndex = '999';
+        }
     }
 
     function selectDate(val, text, inputId, triggerTextId, dropdownId) {

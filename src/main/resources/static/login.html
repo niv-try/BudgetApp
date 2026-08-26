@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>התחברות | ניב אגוז</title>
-    <meta name="google-site-verification" content="18YJgYCyzeMkPIard5sGBl9Rm404z0ZX7I-kasbQlQ8" />
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,7 +12,7 @@
 
         body { font-family: 'Assistant', sans-serif; margin: 0; padding: 20px 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); overflow-x: hidden; position: relative; }
 
-        /* --- התיקון לאייפון: שכבת רקע מקובעת ונפרדת --- */
+        /* --- שכבת רקע מקובעת ונפרדת --- */
         body::before {
             content: '';
             position: fixed;
@@ -58,8 +57,41 @@
         .error-msg { color: #fca5a5; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600; display: none; }
     </style>
 </head>
+<body>
+
+<div class="login-card">
+    <div class="icon-wrapper">
+        <i class="fas fa-fingerprint"></i>
+    </div>
+    <h1>ברוך שובך</h1>
+    <p class="subtitle">ניהול תקציב חכם</p>
+
+    <div id="error-alert" class="error-msg">
+        <i class="fas fa-exclamation-triangle"></i> שם משתמש או סיסמה שגויים
+    </div>
+
+    <form action="/login" method="POST">
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="שם משתמש" required autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="סיסמה" required>
+        </div>
+
+        <button type="submit" class="submit-btn">
+            התחבר <i class="fas fa-arrow-left"></i>
+        </button>
+    </form>
+
+    <a href="/register.html" class="register-link">אין לך חשבון? הירשם כאן</a>
+    <div class="credit">פותח ע"י ניב אגוז</div>
+</div>
+
 <script>
-    // יצירת רקע הפיננסים המרחף במסך ההתחברות
+    // יצירת רקע הפיננסים המרחף במסך ההתחברות (עכשיו במיקום הנכון!)
     function createBackgroundIcons() {
         const bgContainer = document.createElement('div');
         bgContainer.className = 'floating-bg-icons';
@@ -94,41 +126,10 @@
             bgContainer.appendChild(icon);
         }
     }
+
+    // מפעיל את הפונקציה רק אחרי שכל המסך קיים
     createBackgroundIcons();
-</script>
 
-<div class="login-card">
-    <div class="icon-wrapper">
-        <i class="fas fa-fingerprint"></i>
-    </div>
-    <h1>ברוך שובך</h1>
-    <p class="subtitle">ניהול תקציב חכם</p>
-
-    <div id="error-alert" class="error-msg">
-        <i class="fas fa-exclamation-triangle"></i> שם משתמש או סיסמה שגויים
-    </div>
-
-    <form action="/login" method="POST">
-        <div class="input-group">
-            <i class="fas fa-user"></i>
-            <input type="text" id="username" name="username" placeholder="שם משתמש" required autocomplete="off">
-        </div>
-
-        <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="password" name="password" placeholder="סיסמה" required>
-        </div>
-
-        <button type="submit" class="submit-btn">
-            התחבר <i class="fas fa-arrow-left"></i>
-        </button>
-    </form>
-
-    <a href="/register.html" class="register-link">אין לך חשבון? הירשם כאן</a>
-    <div class="credit">פותח ע"י ניב אגוז</div>
-</div>
-
-<script>
     // בדיקה אם הגיע פרמטר שגיאה ב-URL (כשאורזים שגוי)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('error')) {

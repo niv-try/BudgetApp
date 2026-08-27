@@ -99,7 +99,7 @@
             width: 100%; padding: 15px; border-radius: 12px; margin-bottom: 15px;
             font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
             transition: all 0.3s ease; text-decoration: none; border: none; text-align: right; font-family: inherit;
-            box-sizing: border-box; /* התיקון ששומר את הכפתור בתוך הגבולות */
+            box-sizing: border-box;
         }
 
         .menu-toggle-btn {
@@ -194,7 +194,7 @@
         .badges-cabinet {
             display: flex; gap: 12px; background: rgba(0,0,0,0.3); padding: 12px 18px;
             border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);
-            align-items: center; margin-right: auto; /* דוחף שמאלה */
+            align-items: center; margin-right: auto;
         }
         .badge-icon {
             font-size: 1.6rem; color: rgba(255,255,255,0.15); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -388,7 +388,6 @@
         }
         .date-dropdown.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
-        /* התיקון שביקשת: פתיחת תפריט התאריך של אשראי והוראות קבע כלפי מעלה */
         #credit-date-dropdown {
             top: auto;
             bottom: calc(100% + 5px);
@@ -594,10 +593,35 @@
             .dashboard .card { grid-column: 1 / -1 !important; }
         }
 
+        /* המטבע המעוצב של ניב (N-Coin) בסגנון תלת מימד */
+        .niv-coin {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #60a5fa 0%, #2563eb 40%, #1e3a8a 100%);
+            border: 2px solid #bfdbfe;
+            box-shadow: inset 0 -3px 4px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4), 0 2px 5px rgba(0,0,0,0.4);
+            color: #ffffff; font-weight: 800; font-size: 13px; font-family: 'Assistant', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8); line-height: 1; flex-shrink: 0;
+        }
+        .niv-coin::after { content: 'N'; }
+
+        /* הקטנה של המטבע לשימוש בתוך הכפתורים של החנות */
+        .niv-coin.small { width: 18px; height: 18px; font-size: 11px; border-width: 1.5px; }
+
+        /* העיצוב החדש לתגית המטבעות */
+        .coin-badge {
+            background: rgba(15, 23, 42, 0.8); /* כחול כהה */
+            color: #f8fafc; padding: 4px 14px; border-radius: 20px;
+            font-size: 0.95rem; display: flex; align-items: center; gap: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid rgba(59, 130, 246, 0.4); /* מסגרת כחלחלה */
+        }
+
         /* --- חנות וירטואלית וערכות נושא --- */
         .store-btn-sidebar {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             color: white; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            justify-content: space-between; /* דוחף את התגית הצידה */
         }
         .store-btn-sidebar:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5); color: white;}
 
@@ -619,6 +643,7 @@
         .buy-btn {
             background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6;
             padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: 800; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
         .buy-btn:hover { background: #3b82f6; color: white; }
         .buy-btn.equipped { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: #10b981; }
@@ -660,7 +685,8 @@
     </div>
     <div class="sidebar-content">
         <button class="sidebar-item store-btn-sidebar" onclick="openStore(); closeSidebar();">
-            <i class="fas fa-store"></i> חנות (<span id="coins-display">0</span> מטבעות)
+            <div><i class="fas fa-store"></i> חנות</div>
+            <div class="coin-badge"><span id="coins-display">0</span> <div class="niv-coin"></div></div>
         </button>
         <a href="/logout" onclick="localStorage.removeItem('budgetAppUsername');" class="sidebar-item logout-sidebar">
             <i class="fas fa-sign-out-alt"></i> התנתק
@@ -706,7 +732,10 @@
     <div class="confirm-modal" style="width: 450px; max-width: 95%;">
         <div class="confirm-icon" style="color: #f59e0b;"><i class="fas fa-shopping-cart"></i></div>
         <h3 class="confirm-title">חנות השדרוגים</h3>
-        <p class="confirm-message" style="margin-bottom: 15px;">יש לך <strong id="store-coins-count" style="color: #f59e0b;">0</strong> מטבעות.</p>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span class="confirm-message" style="margin: 0;">יתרה זמינה:</span>
+            <div class="coin-badge" style="margin: 0;"><span id="store-coins-count">0</span> <div class="niv-coin"></div></div>
+        </div>
 
         <div id="store-items-container" style="max-height: 350px; overflow-y: auto; text-align: right; padding-left: 5px;">
             <!-- הפריטים ייווצרו פה דרך ה-JS -->
@@ -1022,11 +1051,18 @@
     async function saveProfileData() {
         if(currentUsername === 'אורח' || currentUsername.includes('טוען')) return;
         localStorage.setItem('budgetAppProfileData_' + currentUsername, JSON.stringify(profileData));
+
+        // מכינים חבילה לשליחה לשרת (ממירים את מערך הקניות למחרוזת של פסיקים)
+        const payload = {
+            ...profileData,
+            purchasedItems: (profileData.purchased || []).join(',')
+        };
+
         try {
             await fetch('/api/account/profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileData)
+                body: JSON.stringify(payload)
             });
         } catch(e) {}
     }
@@ -1061,9 +1097,13 @@
     const tickAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
     const badgeSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
 
+    // צליל הרכישה המיוחד
+    const purchaseSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+
     incomeSound.volume = 0.5; expenseSound.volume = 0.4; savingsSound.volume = 0.5;
     goalSound.volume = 0.6; errorSound.volume = 0.8; deleteSound.volume = 0.5;
     jackpotSound.volume = 0.7; tickAudio.volume = 0.15; badgeSound.volume = 0.8;
+    purchaseSound.volume = 0.7;
 
     let alertTimeout;
     function showCustomAlert(title, message, isSuccess = false, isBadge = false) {
@@ -1588,12 +1628,24 @@
                         profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [], coins: 0, purchased: [], activeTheme: '', activeIcon: '' };
                     }
 
-                    // התיקון: שואבים את הנתונים בכל מצב בלי תנאים מיותרים שיכולים לדרוס שמירות!
+                    // --- קריאת כל הנתונים ישירות מהשרת ---
                     profileData.xp = parseInt(acc.xp) || 0;
                     profileData.streak = parseInt(acc.streak) || 0;
-                    profileData.lastLogin = acc.lastLogin || '';
-                    profileData.badges = acc.badges ? acc.badges.split(',').filter(b=>b) : [];
+                    if(acc.lastLogin) profileData.lastLogin = acc.lastLogin;
+                    if(acc.badges) profileData.badges = acc.badges.split(',').filter(b=>b);
                     if(acc.profilePic) profileData.profilePic = acc.profilePic;
+
+                    // משיכת נתוני החנות מה-Java
+                    profileData.coins = parseInt(acc.coins) || 0;
+                    profileData.activeTheme = acc.activeTheme || '';
+                    profileData.activeIcon = acc.activeIcon || '';
+
+                    // מפרק את הסטרינג שקיבלנו מהשרת חזרה למערך
+                    if(acc.purchasedItems) {
+                        profileData.purchased = acc.purchasedItems.split(',').filter(p=>p);
+                    } else {
+                        profileData.purchased = [];
+                    }
 
                     loadProfileUI();
                 }
@@ -2098,12 +2150,11 @@
 
             let btnHTML = '';
             if (isEquipped) {
-                // התיקון: הכפתור כבר לא מנוטרל (disabled), והוא קורא לפונקציית הביטול
                 btnHTML = `<button class="buy-btn equipped" onclick="unequipItem('${item.id}')"><i class="fas fa-times"></i> מופעל (לכיבוי)</button>`;
             } else if (isPurchased) {
                 btnHTML = `<button class="buy-btn" onclick="equipItem('${item.id}')">הפעל</button>`;
             } else {
-                btnHTML = `<button class="buy-btn" onclick="buyItem('${item.id}', ${item.price})"><i class="fas fa-coins"></i> ${item.price}</button>`;
+                btnHTML = `<button class="buy-btn" style="display:flex; align-items:center; gap:6px;" onclick="buyItem('${item.id}', ${item.price})"><div class="niv-coin small"></div> ${item.price}</button>`;
             }
 
             container.innerHTML += `
@@ -2119,21 +2170,6 @@
         document.getElementById('store-overlay').classList.add('show');
     }
 
-    // הפונקציה החדשה: מכבה את הפריט ומחזירה לברירת המחדל
-    async function unequipItem(id) {
-        const item = STORE_ITEMS.find(i => i.id === id);
-
-        if (item.type === 'theme') {
-            profileData.activeTheme = ''; // מנקה את ערכת הנושא (מחזיר לכחול דיפולטיבי)
-        } else if (item.type === 'icon') {
-            profileData.activeIcon = ''; // מנקה את האייקון ליד השם
-        }
-
-        await saveProfileData();
-        loadProfileUI();
-        openStore(); // מרענן את החנות כדי שהכפתור יחזור להראות "הפעל"
-    }
-
     function closeStore() { document.getElementById('store-overlay').classList.remove('show'); }
 
     async function buyItem(id, price) {
@@ -2145,7 +2181,7 @@
         if (!profileData.purchased) profileData.purchased = [];
         profileData.purchased.push(id);
 
-        jackpotSound.currentTime = 0; jackpotSound.play().catch(e=>{});
+        purchaseSound.currentTime = 0; purchaseSound.play().catch(e=>{});
         await saveProfileData();
         loadProfileUI();
         openStore(); // מרענן את החנות
@@ -2158,6 +2194,20 @@
         } else if (item.type === 'icon') {
             profileData.activeIcon = item.value;
         }
+        await saveProfileData();
+        loadProfileUI();
+        openStore();
+    }
+
+    async function unequipItem(id) {
+        const item = STORE_ITEMS.find(i => i.id === id);
+
+        if (item.type === 'theme') {
+            profileData.activeTheme = '';
+        } else if (item.type === 'icon') {
+            profileData.activeIcon = '';
+        }
+
         await saveProfileData();
         loadProfileUI();
         openStore();

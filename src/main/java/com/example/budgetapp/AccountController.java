@@ -118,6 +118,7 @@ public class AccountController {
 
     @PostMapping("/profile")
     public void saveProfile(@RequestBody java.util.Map<String, Object> payload) {
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Account account = repository.findByOwnerUsername(username)
                 .orElse(new Account(username, 0.0));
@@ -133,6 +134,20 @@ public class AccountController {
         }
         if (payload.containsKey("lastLogin") && payload.get("lastLogin") != null) {
             account.setLastLogin(payload.get("lastLogin").toString());
+        }
+
+        // --- עדכון הנתונים החדשים של החנות למסד הנתונים ---
+        if (payload.containsKey("coins") && payload.get("coins") != null) {
+            account.setCoins(((Number) payload.get("coins")).intValue());
+        }
+        if (payload.containsKey("purchasedItems") && payload.get("purchasedItems") != null) {
+            account.setPurchasedItems(payload.get("purchasedItems").toString());
+        }
+        if (payload.containsKey("activeTheme") && payload.get("activeTheme") != null) {
+            account.setActiveTheme(payload.get("activeTheme").toString());
+        }
+        if (payload.containsKey("activeIcon") && payload.get("activeIcon") != null) {
+            account.setActiveIcon(payload.get("activeIcon").toString());
         }
 
         repository.save(account);

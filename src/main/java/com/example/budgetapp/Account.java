@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column; // הוספנו את הייבוא הקריטי הזה!
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -18,14 +19,25 @@ public class Account {
 
     private double balance;
 
-    // הוספנו רק את השדה של הבאדג'ים למסד הנתונים!
     private String badges;
-    @jakarta.persistence.Column(columnDefinition = "TEXT")
+
+    @Column(columnDefinition = "TEXT")
     private String profilePic;
 
     private int xp = 20;
     private int streak = 1;
     private String lastLogin;
+
+    // שדות החנות
+    @Column(columnDefinition = "int default 0")
+    private int coins = 0;
+
+    @Column(length = 1000)
+    private String purchasedItems = "";
+
+    private String activeTheme = "";
+
+    private String activeIcon = "";
 
     public Account() {}
 
@@ -43,7 +55,6 @@ public class Account {
     public double getBalance() { return balance; }
     public void setBalance(double balance) { this.balance = balance; }
 
-    // Getters & Setters לבאדג'ים
     public String getBadges() { return badges; }
     public void setBadges(String badges) { this.badges = badges; }
 
@@ -58,4 +69,17 @@ public class Account {
 
     public String getLastLogin() { return lastLogin; }
     public void setLastLogin(String lastLogin) { this.lastLogin = lastLogin; }
+
+    // Getters & Setters של החנות
+    public int getCoins() { return coins; }
+    public void setCoins(int coins) { this.coins = coins; }
+
+    public String getPurchasedItems() { return purchasedItems; }
+    public void setPurchasedItems(String purchasedItems) { this.purchasedItems = purchasedItems; }
+
+    public String getActiveTheme() { return activeTheme; }
+    public void setActiveTheme(String activeTheme) { this.activeTheme = activeTheme; }
+
+    public String getActiveIcon() { return activeIcon; }
+    public void setActiveIcon(String activeIcon) { this.activeIcon = activeIcon; }
 }

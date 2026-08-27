@@ -545,20 +545,37 @@
 
         /* --- התאמות למסכים קטנים (סמארטפונים) --- */
         @media (max-width: 768px) {
-            body { padding: 12px 8px; }
+            body { padding: 10px 6px; }
 
-            /* פרופיל קומפקטי וחסכוני במקום אנכי */
-            .profile-header { padding: 15px; flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: flex-start; text-align: right; }
-            .profile-pic-wrapper { width: 60px; height: 60px; margin: 0; }
-            .profile-text { flex: 1; min-width: 150px; align-items: flex-start; }
-            .profile-text .user-name { font-size: 1.4rem; justify-content: flex-start; }
-            .gaming-stats { justify-content: flex-start; gap: 8px; margin-top: 5px; width: 100%; }
-            .stat-pill { padding: 4px 10px; font-size: 0.85rem; }
+            /* 1. סידור חדש וברור לראש העמוד (כפתור תפריט, תמונה ושם) */
+            .profile-header {
+                padding: 12px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 10px;
+            }
+            .menu-toggle-btn { margin: 0; width: 42px; height: 42px; font-size: 1.3rem; }
+            .profile-pic-wrapper { width: 55px; height: 55px; margin: 0; }
+            .profile-text { flex: 1; min-width: 120px; align-items: flex-start; }
+            .profile-text .user-name { font-size: 1.3rem; justify-content: flex-start; }
+            .profile-text .greeting { font-size: 0.9rem; }
 
-            .badges-cabinet { flex: 1; padding: 8px 12px; margin: 0; min-width: auto; justify-content: center; }
-            .menu-toggle-btn { margin-right: auto; }
+            /* הסטטיסטיקות והמדליות יורדות לשורה נפרדת ונפרסות לרוחב */
+            .gaming-stats { width: 100%; justify-content: center; gap: 8px; margin-top: 10px; }
+            .stat-pill { padding: 5px 10px; font-size: 0.85rem; flex: 1; justify-content: center; text-align: center; }
+            .badges-cabinet { width: 100%; justify-content: center; padding: 8px; margin: 5px 0 0 0; }
 
-            /* תפריטים עליונים בשורה אחת (חצי חצי) במקום בטור ארוך */
+            /* 2. התאמת תפריט הצד (סיידבר) */
+            .sidebar { width: 260px; right: -280px; padding: 20px 15px; }
+
+            /* 3. התאמת חלון החנות - סידור בטור כדי שלא יימחץ */
+            .confirm-modal { padding: 20px 15px; }
+            .store-item { flex-direction: column; gap: 12px; align-items: stretch; padding: 12px; text-align: center; }
+            .store-item-info h4 { justify-content: center; font-size: 1.05rem; }
+            .buy-btn { width: 100%; justify-content: center; padding: 10px; font-size: 1.05rem; }
+
+            /* תפריטים עליונים בשורה אחת (חצי חצי) */
             .top-controls { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 10px; display: flex; }
             .top-controls .control-box { flex: 1; min-width: 45%; padding: 8px 5px; justify-content: center; margin: 0; }
             .top-controls .control-box select { font-size: 1rem; text-align: center; padding-left: 25px; }
@@ -568,8 +585,8 @@
             .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
             .dashboard .card.main-card, .dashboard .card.savings-card { grid-column: 1 / -1; padding: 15px; }
             .card { padding: 15px 10px; }
-            .card p { font-size: 1.3rem; word-break: break-word; }
-            .card i { font-size: 1.4rem; margin-bottom: 5px; }
+            .card p { font-size: 1.25rem; word-break: break-word; }
+            .card i { font-size: 1.3rem; margin-bottom: 5px; }
 
             /* סידור טפסים */
             .form-row { flex-direction: column; gap: 12px; margin-bottom: 12px; }
@@ -578,9 +595,9 @@
 
             /* סידור היסטוריית הפעולות */
             .list li { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
-            .details strong { word-break: break-word; white-space: normal; line-height: 1.3; }
+            .details strong { word-break: break-word; white-space: normal; line-height: 1.3; font-size: 0.95rem; }
             .amount-controls { flex-direction: row; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 5px; width: 100%; }
-            .amount-controls span { font-size: 1.1rem; }
+            .amount-controls span { font-size: 1.05rem; }
 
             .smart-goals-container { grid-template-columns: 1fr; }
             .goal-header { flex-direction: column; gap: 10px; align-items: stretch; }
@@ -589,8 +606,9 @@
 
         /* --- סמארטפונים צרים במיוחד --- */
         @media (max-width: 400px) {
-            .dashboard { grid-template-columns: 1fr; } /* כל הכרטיסיות בטור אחד */
+            .dashboard { grid-template-columns: 1fr; }
             .dashboard .card { grid-column: 1 / -1 !important; }
+            .gaming-stats { flex-direction: column; }
         }
 
         /* המטבע המעוצב של ניב (N-Coin) בסגנון תלת מימד */
@@ -671,6 +689,48 @@
         }
         #store-items-container::-webkit-scrollbar-thumb:hover {
             background: var(--accent-blue);
+        }
+        /* --- המטבע של ניב (גרסה מוגדלת וברורה) --- */
+        .niv-coin {
+            display: inline-block;
+            width: 38px;          /* הגדלנו את הרוחב משמעותית */
+            height: 38px;         /* הגדלנו את הגובה משמעותית */
+            background-image: url('niv-coin.png');
+
+            /* הטריק: זום-אין של 135% כדי להעלים את השוליים השקופים ולהבליט את המטבע */
+            background-size: 150%;
+            background-repeat: no-repeat;
+            background-position: center;
+            vertical-align: middle;
+            flex-shrink: 0;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* מחיקת ה-N המיותרת ליתר ביטחון */
+        .niv-coin::after {
+            content: none !important;
+        }
+
+        /* המטבע בתוך הכפתורים של החנות (גם אותו נגדיל קצת שייראה טוב) */
+        .niv-coin.small {
+            width: 26px;
+            height: 26px;
+        }
+
+        /* התגית הכחולה שמחזיקה את המטבע והמספר */
+        .coin-badge {
+            background: rgba(15, 23, 42, 0.85);
+            color: #f8fafc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>

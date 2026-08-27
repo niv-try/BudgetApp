@@ -70,6 +70,46 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* --- תפריט צד (סיידבר) --- */
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 10001; opacity: 0; pointer-events: none; transition: all 0.3s ease;
+        }
+        .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .sidebar {
+            position: fixed; top: 0; right: -320px; width: 300px; height: 100vh;
+            background: var(--glass-bg); backdrop-filter: blur(25px);
+            border-left: 1px solid var(--glass-border); box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+            z-index: 10002; transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box;
+        }
+        .sidebar.open { right: 0; }
+
+        .sidebar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;
+        }
+        .sidebar-header h3 { margin: 0; font-size: 1.6rem; color: white; font-weight: 800; }
+        .close-sidebar-btn { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: color 0.3s; padding: 0; }
+        .close-sidebar-btn:hover { color: white; }
+
+        .sidebar-item {
+            width: 100%; padding: 15px; border-radius: 12px; margin-bottom: 15px;
+            font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+            transition: all 0.3s ease; text-decoration: none; border: none; text-align: right; font-family: inherit;
+            box-sizing: border-box; /* התיקון ששומר את הכפתור בתוך הגבולות */
+        }
+
+        .menu-toggle-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; border-radius: 12px; width: 45px; height: 45px;
+            display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .menu-toggle-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
+
         /* --- שורת פרופיל וארון גביעים --- */
         .profile-header {
             background: var(--glass-bg); backdrop-filter: blur(10px);
@@ -113,30 +153,6 @@
         .profile-text .user-name i { color: #f59e0b; animation: wave 2.5s infinite; transform-origin: bottom center; }
         @keyframes wave { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(20deg); } }
 
-        .logout-small-btn {
-            margin-right: auto;
-            background: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-        .logout-small-btn:hover {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            border-color: transparent;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-        }
-
         /* --- עיצוב הגיימיפיקציה --- */
         .gaming-stats { display: flex; gap: 15px; margin-top: 8px; flex-wrap: wrap; }
         .stat-pill {
@@ -178,7 +194,7 @@
         .badges-cabinet {
             display: flex; gap: 12px; background: rgba(0,0,0,0.3); padding: 12px 18px;
             border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);
-            align-items: center;
+            align-items: center; margin-right: auto; /* דוחף שמאלה */
         }
         .badge-icon {
             font-size: 1.6rem; color: rgba(255,255,255,0.15); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -532,7 +548,7 @@
         @media (max-width: 768px) {
             body { padding: 12px 8px; }
 
-            /* 1. פרופיל קומפקטי וחסכוני במקום אנכי */
+            /* פרופיל קומפקטי וחסכוני במקום אנכי */
             .profile-header { padding: 15px; flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: flex-start; text-align: right; }
             .profile-pic-wrapper { width: 60px; height: 60px; margin: 0; }
             .profile-text { flex: 1; min-width: 150px; align-items: flex-start; }
@@ -540,28 +556,28 @@
             .gaming-stats { justify-content: flex-start; gap: 8px; margin-top: 5px; width: 100%; }
             .stat-pill { padding: 4px 10px; font-size: 0.85rem; }
 
-            .badges-cabinet { flex: 1; padding: 8px 12px; margin: 0; min-width: auto; justify-content: center; order: 3; }
-            .logout-small-btn { width: auto; margin: 0 !important; flex-grow: 1; justify-content: center; order: 4; padding: 8px; }
+            .badges-cabinet { flex: 1; padding: 8px 12px; margin: 0; min-width: auto; justify-content: center; }
+            .menu-toggle-btn { margin-right: auto; }
 
-            /* 2. תפריטים עליונים בשורה אחת (חצי חצי) במקום בטור ארוך */
+            /* תפריטים עליונים בשורה אחת (חצי חצי) במקום בטור ארוך */
             .top-controls { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 10px; display: flex; }
             .top-controls .control-box { flex: 1; min-width: 45%; padding: 8px 5px; justify-content: center; margin: 0; }
             .top-controls .control-box select { font-size: 1rem; text-align: center; padding-left: 25px; }
             .top-controls .export-btn { width: 100%; flex: 100%; padding: 10px; margin-top: 0; }
 
-            /* 3. סידור כרטיסיות התקציב */
+            /* סידור כרטיסיות התקציב */
             .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
             .dashboard .card.main-card, .dashboard .card.savings-card { grid-column: 1 / -1; padding: 15px; }
             .card { padding: 15px 10px; }
             .card p { font-size: 1.3rem; word-break: break-word; }
             .card i { font-size: 1.4rem; margin-bottom: 5px; }
 
-            /* 4. סידור טפסים */
+            /* סידור טפסים */
             .form-row { flex-direction: column; gap: 12px; margin-bottom: 12px; }
             .form-group { width: 100%; max-width: 100% !important; display: block; }
             .date-dropdown { min-width: 100%; right: 0; left: 0; }
 
-            /* 5. סידור היסטוריית הפעולות */
+            /* סידור היסטוריית הפעולות */
             .list li { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
             .details strong { word-break: break-word; white-space: normal; line-height: 1.3; }
             .amount-controls { flex-direction: row; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 5px; width: 100%; }
@@ -577,9 +593,80 @@
             .dashboard { grid-template-columns: 1fr; } /* כל הכרטיסיות בטור אחד */
             .dashboard .card { grid-column: 1 / -1 !important; }
         }
+
+        /* --- חנות וירטואלית וערכות נושא --- */
+        .store-btn-sidebar {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .store-btn-sidebar:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5); color: white;}
+
+        .logout-sidebar {
+            background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .logout-sidebar:hover {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white; border-color: transparent; transform: translateY(-2px);
+        }
+
+        .store-item {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px; border-radius: 15px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .store-item-info h4 { margin: 0 0 5px 0; color: white; display: flex; align-items: center; gap: 8px;}
+        .store-item-info p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+        .buy-btn {
+            background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6;
+            padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: 800; transition: all 0.2s;
+        }
+        .buy-btn:hover { background: #3b82f6; color: white; }
+        .buy-btn.equipped { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: #10b981; }
+
+        /* ערכות הנושא הנרכשות */
+        body.theme-matrix { --bg-color: #022c22; --accent-blue: #10b981; --glass-bg: rgba(6, 78, 59, 0.75); }
+        body.theme-matrix::before { background: radial-gradient(circle at top right, #064e3b, #022c22, #000000); }
+        body.theme-matrix .main-card { background: linear-gradient(135deg, #065f46 0%, #047857 100%); }
+
+        body.theme-racing { --bg-color: #171717; --accent-blue: #ef4444; --glass-bg: rgba(38, 38, 38, 0.85); --glass-border: rgba(239, 68, 68, 0.2); }
+        body.theme-racing::before { background: radial-gradient(circle at top right, #262626, #171717, #0a0a0a); }
+        body.theme-racing .main-card { background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%); }
+
+        /* --- עיצוב פס הגלילה של החנות --- */
+        #store-items-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #store-items-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        #store-items-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+        #store-items-container::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
     </style>
 </head>
 <body>
+
+<!-- תפריט צד (Sidebar) -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3>תפריט</h3>
+        <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sidebar-content">
+        <button class="sidebar-item store-btn-sidebar" onclick="openStore(); closeSidebar();">
+            <i class="fas fa-store"></i> חנות (<span id="coins-display">0</span> מטבעות)
+        </button>
+        <a href="/logout" onclick="localStorage.removeItem('budgetAppUsername');" class="sidebar-item logout-sidebar">
+            <i class="fas fa-sign-out-alt"></i> התנתק
+        </a>
+    </div>
+</div>
 
 <div id="custom-alert" class="custom-alert">
     <div id="alert-icon-wrapper" class="alert-icon"><i id="alert-icon-class" class="fas fa-exclamation-circle"></i></div>
@@ -615,9 +702,27 @@
     </div>
 </div>
 
+<div id="store-overlay" class="confirm-overlay">
+    <div class="confirm-modal" style="width: 450px; max-width: 95%;">
+        <div class="confirm-icon" style="color: #f59e0b;"><i class="fas fa-shopping-cart"></i></div>
+        <h3 class="confirm-title">חנות השדרוגים</h3>
+        <p class="confirm-message" style="margin-bottom: 15px;">יש לך <strong id="store-coins-count" style="color: #f59e0b;">0</strong> מטבעות.</p>
+
+        <div id="store-items-container" style="max-height: 350px; overflow-y: auto; text-align: right; padding-left: 5px;">
+            <!-- הפריטים ייווצרו פה דרך ה-JS -->
+        </div>
+
+        <button class="btn-cancel" onclick="closeStore()" style="width: 100%; margin-top: 20px;">סגור חנות</button>
+    </div>
+</div>
+
 <div class="container">
 
     <div class="profile-header">
+        <button class="menu-toggle-btn" onclick="openSidebar()" title="תפריט">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <div class="profile-pic-wrapper">
             <img id="profile-img" class="profile-img" src="" alt="תמונת פרופיל">
             <div class="profile-pic-overlay" onclick="document.getElementById('profile-upload').click()" title="העלה תמונה אישית">
@@ -628,6 +733,7 @@
                 <i class="fas fa-dice"></i>
             </button>
         </div>
+
         <div class="profile-text">
             <div class="greeting">ברוך שובך לאתר,</div>
             <div class="user-name" id="user-name-display">טוען... <i class="fas fa-hand-sparkles"></i></div>
@@ -647,10 +753,6 @@
         </div>
 
         <div class="badges-cabinet" id="badges-cabinet"></div>
-
-        <a href="/logout" onclick="localStorage.removeItem('budgetAppUsername');" class="logout-small-btn" title="התנתק מהחשבון">
-            <i class="fas fa-sign-out-alt"></i> התנתק
-        </a>
     </div>
 
     <div class="header">
@@ -822,6 +924,16 @@
 </div>
 
 <script>
+    // פונקציות הסיידבר
+    function openSidebar() {
+        document.getElementById('sidebar-overlay').classList.add('show');
+        document.getElementById('sidebar').classList.add('open');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar-overlay').classList.remove('show');
+        document.getElementById('sidebar').classList.remove('open');
+    }
+
     function createBackgroundIcons() {
         const bgContainer = document.createElement('div');
         bgContainer.className = 'floating-bg-icons';
@@ -854,11 +966,8 @@
 
     let currentUsername = localStorage.getItem('budgetAppUsername') || 'אורח';
     let profileData = {
-        profilePic: '',
-        xp: 0,
-        streak: 0,
-        lastLogin: '',
-        badges: []
+        profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [],
+        coins: 0, purchased: [], activeTheme: '', activeIcon: ''
     };
 
     if (currentUsername !== 'אורח') {
@@ -869,7 +978,8 @@
     }
 
     function loadProfileUI() {
-        document.getElementById('user-name-display').innerHTML = `${currentUsername} <i class="fas fa-hand-sparkles"></i>`;
+        const displayIcon = profileData.activeIcon ? ` ${profileData.activeIcon}` : '';
+        document.getElementById('user-name-display').innerHTML = `${currentUsername}${displayIcon} <i class="fas fa-hand-sparkles"></i>`;
 
         if (profileData.profilePic) {
             document.getElementById('profile-img').src = profileData.profilePic;
@@ -882,6 +992,12 @@
         document.getElementById('streak-counter').innerText = `${profileData.streak || 0} ימים`;
         document.getElementById('level-counter').innerText = currentLevel;
         document.getElementById('xp-text').innerText = `${xpIntoLevel}/100 XP`;
+
+        const coinsDisplay = document.getElementById('coins-display');
+        if(coinsDisplay) coinsDisplay.innerText = profileData.coins || 0;
+
+        document.body.className = profileData.activeTheme || '';
+
         setTimeout(() => {
             const progress = document.getElementById('level-progress');
             if (progress) progress.style.width = `${xpIntoLevel}%`;
@@ -1049,6 +1165,7 @@
 
         if (addXP > 0) {
             profileData.xp = (profileData.xp || 0) + addXP;
+            profileData.coins = (profileData.coins || 0) + addXP;
             xpGained = true;
         }
 
@@ -1468,7 +1585,7 @@
                     if (currentUsername !== realUsername) {
                         currentUsername = realUsername;
                         localStorage.setItem('budgetAppUsername', currentUsername);
-                        profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [] };
+                        profileData = { profilePic: '', xp: 0, streak: 0, lastLogin: '', badges: [], coins: 0, purchased: [], activeTheme: '', activeIcon: '' };
                     }
 
                     // התיקון: שואבים את הנתונים בכל מצב בלי תנאים מיותרים שיכולים לדרוס שמירות!
@@ -1960,6 +2077,91 @@
     form.addEventListener('submit', addTransaction);
 
     fetchData();
+
+    // מלאי החנות
+    const STORE_ITEMS = [
+        { id: 'icon-manager', name: 'תג מנג\'ר', desc: 'יוסיף 👔 ליד השם שלך במסך הראשי', price: 50, type: 'icon', value: '👔', icon: 'fa-user-tie' },
+        { id: 'icon-racer', name: 'תג נהג מירוצים', desc: 'שים גז! יוסיף 🏎️ ליד השם שלך', price: 100, type: 'icon', value: '🏎️', icon: 'fa-flag-checkered' },
+        { id: 'theme-matrix', name: 'סקין מטריקס (האקר)', desc: 'מחליף את עיצוב המערכת לירוק ושחור', price: 200, type: 'theme', value: 'theme-matrix', icon: 'fa-terminal' },
+        { id: 'theme-racing', name: 'סקין מסלול מירוצים', desc: 'עיצוב קרבון אגרסיבי עם גוונים של אדום', price: 300, type: 'theme', value: 'theme-racing', icon: 'fa-car-side' }
+    ];
+
+    function openStore() {
+        document.getElementById('store-coins-count').innerText = profileData.coins || 0;
+        const container = document.getElementById('store-items-container');
+        container.innerHTML = '';
+
+        STORE_ITEMS.forEach(item => {
+            const isPurchased = (profileData.purchased || []).includes(item.id);
+            const isEquipped = (item.type === 'theme' && profileData.activeTheme === item.value) ||
+                (item.type === 'icon' && profileData.activeIcon === item.value);
+
+            let btnHTML = '';
+            if (isEquipped) {
+                // התיקון: הכפתור כבר לא מנוטרל (disabled), והוא קורא לפונקציית הביטול
+                btnHTML = `<button class="buy-btn equipped" onclick="unequipItem('${item.id}')"><i class="fas fa-times"></i> מופעל (לכיבוי)</button>`;
+            } else if (isPurchased) {
+                btnHTML = `<button class="buy-btn" onclick="equipItem('${item.id}')">הפעל</button>`;
+            } else {
+                btnHTML = `<button class="buy-btn" onclick="buyItem('${item.id}', ${item.price})"><i class="fas fa-coins"></i> ${item.price}</button>`;
+            }
+
+            container.innerHTML += `
+                <div class="store-item">
+                    <div class="store-item-info">
+                        <h4><i class="fas ${item.icon}"></i> ${item.name}</h4>
+                        <p>${item.desc}</p>
+                    </div>
+                    ${btnHTML}
+                </div>
+            `;
+        });
+        document.getElementById('store-overlay').classList.add('show');
+    }
+
+    // הפונקציה החדשה: מכבה את הפריט ומחזירה לברירת המחדל
+    async function unequipItem(id) {
+        const item = STORE_ITEMS.find(i => i.id === id);
+
+        if (item.type === 'theme') {
+            profileData.activeTheme = ''; // מנקה את ערכת הנושא (מחזיר לכחול דיפולטיבי)
+        } else if (item.type === 'icon') {
+            profileData.activeIcon = ''; // מנקה את האייקון ליד השם
+        }
+
+        await saveProfileData();
+        loadProfileUI();
+        openStore(); // מרענן את החנות כדי שהכפתור יחזור להראות "הפעל"
+    }
+
+    function closeStore() { document.getElementById('store-overlay').classList.remove('show'); }
+
+    async function buyItem(id, price) {
+        if ((profileData.coins || 0) < price) {
+            showCustomAlert('חסרים מטבעות', 'אין לך מספיק מטבעות לרכישת פריט זה.', false);
+            return;
+        }
+        profileData.coins -= price;
+        if (!profileData.purchased) profileData.purchased = [];
+        profileData.purchased.push(id);
+
+        jackpotSound.currentTime = 0; jackpotSound.play().catch(e=>{});
+        await saveProfileData();
+        loadProfileUI();
+        openStore(); // מרענן את החנות
+    }
+
+    async function equipItem(id) {
+        const item = STORE_ITEMS.find(i => i.id === id);
+        if (item.type === 'theme') {
+            profileData.activeTheme = item.value;
+        } else if (item.type === 'icon') {
+            profileData.activeIcon = item.value;
+        }
+        await saveProfileData();
+        loadProfileUI();
+        openStore();
+    }
 </script>
 </body>
 </html>

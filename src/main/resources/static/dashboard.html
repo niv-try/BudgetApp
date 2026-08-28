@@ -107,7 +107,13 @@
         .sidebar-item {
             width: 100%; padding: 15px; border-radius: 12px; margin-bottom: 15px;
             font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
-            transition: all 0.3s ease; text-decoration: none; border: none; text-align: right; font-family: inherit;
+            text-decoration: none; border: none; text-align: right; font-family: inherit;
+            /* --- הגדרות חדשות להאצת חומרה (GPU) --- */
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            transform: translate3d(0, 0, 0);
+            will-change: transform, box-shadow;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         .menu-toggle-btn {
@@ -571,6 +577,33 @@
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); justify-content: space-between;
         }
+        /* --- עיצוב כפתור מרכז הישגים --- */
+        .achievements-sidebar {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .achievements-sidebar:hover {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        /* --- עיצוב כפתור מצב פרטיות --- */
+        .privacy-sidebar {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .privacy-sidebar:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
         .store-btn-sidebar:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5); color: white;}
         .logout-sidebar { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
         .logout-sidebar:hover { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border-color: transparent; transform: translateY(-2px); }
@@ -588,10 +621,125 @@
         body.theme-racing::before { background: radial-gradient(circle at top right, #262626, #171717, #0a0a0a); }
         body.theme-racing .main-card { background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%); }
 
-        #store-items-container::-webkit-scrollbar { width: 6px; }
-        #store-items-container::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 10px; }
-        #store-items-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-        #store-items-container::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+        /* --- עיצוב פסי גלילה לחלונות הקופצים --- */
+        #store-items-container::-webkit-scrollbar,
+        #main-achievements-container::-webkit-scrollbar,
+        #quests-container::-webkit-scrollbar { width: 6px; }
+
+        #store-items-container::-webkit-scrollbar-track,
+        #main-achievements-container::-webkit-scrollbar-track,
+        #quests-container::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 10px; }
+
+        #store-items-container::-webkit-scrollbar-thumb,
+        #main-achievements-container::-webkit-scrollbar-thumb,
+        #quests-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+
+        #store-items-container::-webkit-scrollbar-thumb:hover,
+        #main-achievements-container::-webkit-scrollbar-thumb:hover,
+        #quests-container::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+
+        /* --- התאמת פקדי הניהול לתפריט הצד --- */
+        .sidebar-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-controls .control-box {
+            margin: 0;
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .sidebar-controls .export-btn {
+            width: 100%;
+            margin: 0;
+        }
+
+        /* --- עיצוב כרטיסיות משימה וקווסטים --- */
+        .quest-card {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .quest-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quest-title {
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quest-reward {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .quest-progress-bg {
+            background: rgba(255,255,255,0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .quest-progress-fill {
+            background: linear-gradient(90deg, #10b981, #059669);
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .claim-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 5px;
+        }
+        .claim-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+        }
+        /* --- עיצוב כפתור משימות בתפריט --- */
+        .quests-sidebar {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .quests-sidebar:hover {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
     </style>
 </head>
 <body>
@@ -603,17 +751,38 @@
         <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
     </div>
     <div class="sidebar-content">
+        <!-- פקדי ניהול שהועברו מהמסך הראשי -->
+        <div class="sidebar-controls">
+            <div class="control-box">
+                <i class="fas fa-coins"></i>
+                <select id="currency-selector" onchange="changeCurrency()">
+                    <option value="ILS">₪ שקלים</option>
+                    <option value="USD">$ דולרים</option>
+                </select>
+            </div>
+            <div class="control-box">
+                <i class="fas fa-calendar-alt"></i>
+                <select id="month-filter" onchange="renderUI()"></select>
+            </div>
+            <button class="export-btn" onclick="exportToCSV(); closeSidebar();">
+                <i class="fas fa-file-excel"></i> ייצוא
+            </button>
+        </div>
         <button class="sidebar-item store-btn-sidebar" onclick="playSound(clickSound); openStore(); closeSidebar();">
             <div><i class="fas fa-store"></i> חנות</div>
             <div class="coin-badge"><span id="coins-display">0</span> <div class="niv-coin"></div></div>
         </button>
 
-        <button class="sidebar-item" style="background: rgba(245, 158, 11, 0.1); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.2);" onclick="playSound(clickSound); openAchievementsModal(); closeSidebar();">
+        <button class="sidebar-item achievements-sidebar" onclick="playSound(clickSound); openAchievementsModal(); closeSidebar();">
             <i class="fas fa-trophy"></i> מרכז ההישגים
         </button>
 
-        <button class="sidebar-item" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2);" onclick="playSound(clickSound); togglePrivacyMode();">
+        <button class="sidebar-item privacy-sidebar" onclick="playSound(clickSound); togglePrivacyMode();">
             <i class="fas fa-eye-slash" id="privacy-icon"></i> <span id="privacy-text">מצב פרטיות</span>
+        </button>
+
+        <button class="sidebar-item quests-sidebar" onclick="playSound(clickSound); openQuestsModal(); closeSidebar();">
+            <i class="fas fa-tasks"></i> אתגרים ומשימות
         </button>
 
         <a href="/logout" onclick="playSound(clickSound); localStorage.removeItem('budgetAppUsername');" class="sidebar-item logout-sidebar" style="margin-top: auto;">
@@ -682,6 +851,21 @@
     </div>
 </div>
 
+<!-- חלון צף של משימות -->
+<div id="quests-overlay" class="confirm-overlay">
+    <div class="confirm-modal" style="width: 500px; max-width: 95%;">
+        <div class="confirm-icon" style="color: #10b981;"><i class="fas fa-tasks"></i></div>
+        <h3 class="confirm-title">אתגרים ומשימות</h3>
+        <p class="confirm-message" style="margin-bottom: 20px;">השלם משימות וצבור מטבעות לחנות!</p>
+
+        <!-- כאן ה-JavaScript ישתול את המשימות שלנו -->
+        <div id="quests-container" style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-left: 5px; text-align: right;">
+        </div>
+
+        <button class="btn-cancel" onclick="closeQuestsModal()" style="width: 100%; margin-top: 25px; padding: 12px; font-size: 1.1rem;">סגור משימות</button>
+    </div>
+</div>
+
 <div class="container">
     <div class="profile-header">
         <button class="menu-toggle-btn" onclick="openSidebar()" title="תפריט">
@@ -717,25 +901,6 @@
             </div>
         </div>
         <div class="badges-cabinet" id="badges-cabinet"></div>
-    </div>
-
-    <div class="header">
-        <div class="top-controls">
-            <div class="control-box">
-                <i class="fas fa-coins"></i>
-                <select id="currency-selector" onchange="changeCurrency()">
-                    <option value="ILS">₪ שקלים</option>
-                    <option value="USD">$ דולרים</option>
-                </select>
-            </div>
-            <div class="control-box">
-                <i class="fas fa-calendar-alt"></i>
-                <select id="month-filter" onchange="renderUI()"></select>
-            </div>
-            <button class="export-btn" onclick="exportToCSV()">
-                <i class="fas fa-file-excel"></i> ייצוא
-            </button>
-        </div>
     </div>
 
     <div class="dashboard">
@@ -2108,48 +2273,61 @@
 
     function updateChart(allExpandedData) {
         const ctx = document.getElementById('expenseChart').getContext('2d');
+
+        // 1. סינון להוצאות בלבד
         const expenses = allExpandedData.filter(t => t.type === 'expense' || t.type === 'credit_expense' || t.type === 'recurring_history' || t.type === 'past_credit_expense');
         const categoryTotals = {};
 
+        // 2. קיבוץ לפי "category" במקום "text"
         expenses.forEach(e => {
-            categoryTotals[e.text] = (categoryTotals[e.text] || 0) + e.amount;
+            categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
         });
 
         if (expenseChartInstance) { expenseChartInstance.destroy(); }
         if(Object.keys(categoryTotals).length === 0) return;
 
+        // 3. יצירת גרף עמודות
         expenseChartInstance = new Chart(ctx, {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: Object.keys(categoryTotals),
                 datasets: [{
+                    label: 'הוצאות לפי קטגוריה',
                     data: Object.values(categoryTotals),
                     backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'],
+                    borderRadius: 6, // פינות מעוגלות לעמודות
                     borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' },
+                animation: { duration: 1000, easing: 'easeOutQuart' },
                 plugins: {
-                    legend: { position: 'bottom', rtl: true, labels: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } } },
+                    // העלמת המקרא (הטקסט יופיע מתחת לכל עמודה)
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                let label = context.label || '';
-                                if (label) label += ': ';
-                                const value = context.parsed;
-                                const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
-                                const percentage = ((value / total) * 100).toFixed(1) + '%';
-                                label += currencySymbol + value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                                label += ' (' + percentage + ')';
-                                return label;
+                                return currencySymbol + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                             }
                         }
                     }
                 },
-                cutout: '65%'
+                scales: {
+                    x: {
+                        ticks: { color: '#cbd5e1', font: { family: 'Assistant', size: 12 } },
+                        grid: { display: false } // הסרת רשת רקע מאחורי העמודות למראה נקי
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#cbd5e1',
+                            callback: function(value) { return currencySymbol + value; }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' } // רשת אופקית עדינה מאוד
+                    }
+                }
             }
         });
     }
@@ -2285,6 +2463,140 @@
         document.getElementById('achievements-overlay').classList.remove('show');
     }
 
+    // --- מאגר משימות (Templates) ---
+    const QUEST_TEMPLATES = [
+        { templateId: 'no-restaurants', title: 'אתגר הבישול: 3 ימים בלי מסעדות', reward: 20, target: 3, unit: 'ימים', type: 'avoid', category: '🍔 מסעדות ואוכל' },
+        { templateId: 'no-gaming', title: 'שבוע צנוע: 5 ימים בלי פנאי', reward: 30, target: 5, unit: 'ימים', type: 'avoid', category: '🎮 פנאי וגיימינג' },
+        { templateId: 'no-clothes', title: 'ארון מלא: 4 ימים בלי שופינג', reward: 25, target: 4, unit: 'ימים', type: 'avoid', category: '🛒 סופר' }, // אפשר לשנות לקטגוריית קניות
+        { templateId: 'savings-deposit', title: 'הפקדה חכמה: הפקד לחיסכון', reward: 15, target: 1, unit: 'הפקדות', type: 'action', txType: 'savings' }
+    ];
+
+    // --- ניהול משימות פעילות (שמירה לוקאלית) ---
+    function getActiveQuests() {
+        let quests = JSON.parse(localStorage.getItem('budgetAppActiveQuests_' + currentUsername) || '[]');
+        if (quests.length === 0) {
+            quests = generateNewQuests(3, []); // מייצר 3 משימות בפעם הראשונה
+            saveActiveQuests(quests);
+        }
+        return quests;
+    }
+
+    function saveActiveQuests(quests) {
+        localStorage.setItem('budgetAppActiveQuests_' + currentUsername, JSON.stringify(quests));
+    }
+
+    function generateNewQuests(count, currentQuests) {
+        let newQuests = [...currentQuests];
+        let availableTemplates = QUEST_TEMPLATES.filter(t => !newQuests.some(q => q.templateId === t.templateId));
+
+        for (let i = 0; i < count; i++) {
+            if (availableTemplates.length === 0) break;
+            const randomIndex = Math.floor(Math.random() * availableTemplates.length);
+            const template = availableTemplates.splice(randomIndex, 1)[0];
+
+            newQuests.push({
+                id: 'quest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                templateId: template.templateId,
+                startDate: new Date().toISOString() // המשימה מתחילה מרגע זה!
+            });
+        }
+        return newQuests;
+    }
+
+    // --- פתיחת חלון המשימות והצגתן ---
+    function openQuestsModal() {
+        const container = document.getElementById('quests-container');
+        container.innerHTML = '';
+
+        let activeQuests = getActiveQuests();
+        let needsSave = false;
+
+        activeQuests.forEach(quest => {
+            const template = QUEST_TEMPLATES.find(t => t.templateId === quest.templateId);
+            if(!template) return;
+
+            // סינון פעולות שקרו *רק* אחרי תחילת המשימה
+            const questStart = new Date(quest.startDate);
+            const relevantTxs = transactions.filter(t => new Date(t.date) >= questStart);
+            let progress = 0;
+
+            if (template.type === 'avoid') {
+                // אם זו משימת הימנעות, נבדוק אם הייתה הוצאה אסורה
+                const failedTxs = relevantTxs.filter(t => t.category === template.category && (t.type === 'expense' || t.type === 'credit_expense'));
+
+                if (failedTxs.length > 0) {
+                    // אופס! הוצאנו כסף. נאפס את התאריך של המשימה לתאריך של ההוצאה הזו
+                    failedTxs.sort((a,b) => new Date(b.date) - new Date(a.date));
+                    quest.startDate = new Date(failedTxs[0].date).toISOString();
+                    needsSave = true;
+                    progress = 0; // חוזרים ל-0 ימים
+                } else {
+                    // סופרים כמה ימים עברו מאז תחילת המשימה או מאז האיפוס האחרון
+                    const diffDays = Math.floor((new Date() - new Date(quest.startDate)) / (1000 * 60 * 60 * 24));
+                    progress = Math.min(diffDays, template.target);
+                }
+            } else if (template.type === 'action') {
+                // אם זו משימה אקטיבית, פשוט נספור כמה פעמים היא בוצעה מאז שהחלה
+                progress = relevantTxs.filter(t => t.type === template.txType).length;
+                progress = Math.min(progress, template.target);
+            }
+
+            const percentage = (progress / template.target) * 100;
+            const isCompleted = progress >= template.target;
+
+            let btnHTML = isCompleted
+                ? `<button class="claim-btn" onclick="claimQuestReward('${quest.id}')"><i class="fas fa-gift"></i> אסוף ${template.reward} מטבעות</button>`
+                : `<button class="claim-btn" style="background: rgba(255,255,255,0.1); color: #94a3b8; cursor: not-allowed;" disabled>${progress}/${template.target} ${template.unit}</button>`;
+
+            container.innerHTML += `
+                <div class="quest-card">
+                    <div class="quest-header">
+                        <div class="quest-title"><i class="fas fa-star" style="color: #facc15;"></i> ${template.title}</div>
+                        <div class="quest-reward"><div class="niv-coin small"></div> ${template.reward}</div>
+                    </div>
+                    <div class="quest-progress-bg">
+                        <div class="quest-progress-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    ${btnHTML}
+                </div>
+            `;
+        });
+
+        if (needsSave) saveActiveQuests(activeQuests);
+        document.getElementById('quests-overlay').classList.add('show');
+    }
+
+    // --- איסוף הפרס ויצירת משימה חדשה ---
+    async function claimQuestReward(questId) {
+        let activeQuests = getActiveQuests();
+        const questIndex = activeQuests.findIndex(q => q.id === questId);
+        if (questIndex === -1) return;
+
+        const quest = activeQuests[questIndex];
+        const template = QUEST_TEMPLATES.find(t => t.templateId === quest.templateId);
+
+        // 1. הוספת מטבעות
+        profileData.coins = (profileData.coins || 0) + template.reward;
+
+        // 2. הפעלת סאונד כפול לחוויה מספקת
+        playSound(jackpotSound);
+        setTimeout(() => playSound(purchaseSound), 300);
+
+        // 3. מחיקת המשימה שסיימנו והגרלת משימה חדשה (כדי שתמיד יהיו 3)
+        activeQuests.splice(questIndex, 1);
+        activeQuests = generateNewQuests(1, activeQuests);
+        saveActiveQuests(activeQuests);
+
+        await saveProfileData();
+        loadProfileUI();
+
+        openQuestsModal(); // מרענן את החלון כדי להציג את המשימה החדשה
+        showCustomAlert('משימה הושלמה!', `אלוף! זכית ב-${template.reward} מטבעות ומשימה חדשה מחכה לך.`, true);
+    }
+
+    function closeQuestsModal() {
+        document.getElementById('quests-overlay').classList.remove('show');
+    }
 </script>
 </body>
 </html>

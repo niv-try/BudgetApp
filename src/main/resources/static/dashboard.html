@@ -798,7 +798,8 @@
             <i class="fas fa-tasks"></i> אתגרים ומשימות
         </button>
 
-        <a href="/logout" onclick="playSound(clickSound); localStorage.removeItem('budgetAppUsername');" class="sidebar-item logout-sidebar" style="margin-top: auto;">
+        <!-- שינוי כפתור ההתנתקות למחיקת הטוקן -->
+        <a href="#" onclick="playSound(clickSound); localStorage.removeItem('budgetAppUsername'); localStorage.removeItem('budgetAppToken'); window.location.href='/login.html';" class="sidebar-item logout-sidebar" style="margin-top: auto;">
             <i class="fas fa-sign-out-alt"></i> התנתק
         </a>
     </div>
@@ -1053,6 +1054,38 @@
 </div>
 
 <script>
+    // --- מערכת אבטחה וטוקנים (JWT Interceptor) ---
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+        let [resource, config] = arguments;
+
+        // בודקים אם הבקשה היא לשרת שלנו (מתחילה ב-/api/)
+        if (typeof resource === 'string' && resource.startsWith('/api/')) {
+            const token = localStorage.getItem('budgetAppToken');
+
+            // אם הבקשה מגיעה בלי הגדרות, ניצור אותן
+            if (!config) config = {};
+            if (!config.headers) config.headers = {};
+
+            // אם מצאנו טוקן בזיכרון, נצרף אותו לבקשה
+            if (token) {
+                config.headers['Authorization'] = 'Bearer ' + token;
+            }
+        }
+
+        // מעבירים את הבקשה הלאה עם הטוקן
+        const response = await originalFetch(resource, config);
+
+        // אם השרת זורק אותנו החוצה (אין טוקן או שפג תוקפו)
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('budgetAppToken');
+            window.location.href = '/login.html'; // זורק את המשתמש חזרה למסך התחברות
+        }
+
+        return response;
+    };
+    // ------------------------------------------------
+
     // --- משתני ליבה ואודיו ---
     const API_URL = '/api/transactions';
     const GOALS_API_URL = '/api/goals';

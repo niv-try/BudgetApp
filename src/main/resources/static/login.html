@@ -75,7 +75,8 @@
         <i class="fas fa-exclamation-triangle"></i> שם משתמש או סיסמה שגויים
     </div>
 
-    <form action="/login" method="POST">
+    <!-- שינינו פה כדי ש-JavaScript יטפל בשליחה -->
+    <form id="login-form">
         <div class="input-group">
             <i class="fas fa-user"></i>
             <input type="text" id="username" name="username" placeholder="שם משתמש" required autocomplete="off">
@@ -96,7 +97,7 @@
 </div>
 
 <script>
-    // יצירת רקע הפיננסים המרחף במסך ההתחברות (עכשיו במיקום הנכון!)
+    // יצירת רקע הפיננסים המרחף במסך ההתחברות
     function createBackgroundIcons() {
         const bgContainer = document.createElement('div');
         bgContainer.className = 'floating-bg-icons';
@@ -135,7 +136,43 @@
     // מפעיל את הפונקציה רק אחרי שכל המסך קיים
     createBackgroundIcons();
 
-    // בדיקה אם הגיע פרמטר שגיאה ב-URL (כשאורזים שגוי)
+    // --- מערכת התחברות עם JWT ---
+    document.getElementById('login-form').addEventListener('submit', async function(event) {
+        event.preventDefault(); // עוצר את הרענון הרגיל של הדף
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorAlert = document.getElementById('error-alert');
+
+        // מסתיר את השגיאה אם המשתמש מנסה שוב
+        errorAlert.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // שומרים את הטוקן ואת שם המשתמש בזיכרון של הדפדפן
+                localStorage.setItem('budgetAppToken', data.jwt);
+                localStorage.setItem('budgetAppUsername', username);
+
+                // מעבר לדשבורד
+                window.location.href = '/dashboard.html';
+            } else {
+                // מציג הודעת שגיאה על סיסמה שגויה
+                errorAlert.style.display = 'block';
+            }
+        } catch (error) {
+            console.error("שגיאת התחברות", error);
+            errorAlert.style.display = 'block';
+        }
+    });
+
+    // למקרה ש-Spring Security מעביר אותנו לפה עם פרמטר שגיאה ב-URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('error')) {
         document.getElementById('error-alert').style.display = 'block';

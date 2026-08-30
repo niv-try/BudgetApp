@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- תגית האימות של גוגל - שים את שלך כאן! -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <!-- אייקון הלשונית של הדפדפן -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <!-- אייקון לאפל/התקנה -->
+    <link rel="apple-touch-icon" href="/logo-512.png">
+    <link rel="shortcut icon" type="image/png" href="/logo-512.png">
+
+    <!-- תגית האימות של גוגל -->
     <meta name="google-site-verification" content="18YJgYCyzeMkPIard5sGBl9Rm404z0ZX7I-kasbQlQ8" />
-    <!-- תגיות SEO קריטיות לגוגל -->
     <title>ניהול תקציב חכם | ניב אגוז</title>
     <meta name="description" content="האפליקציה המובילה לניהול תקציב אישי. מעקב אחר הכנסות והוצאות, הגדרת יעדים חכמים, ניהול הוראות קבע וקבלת תובנות כלכליות על בסיס גיימיפיקציה. פותח על ידי ניב אגוז.">
     <meta name="keywords" content="ניהול תקציב, אפליקציה לניהול הוצאות, חיסכון, מעקב כלכלי, ניב אגוז, ניהול כסף, כלכלה אישית">
@@ -48,7 +55,6 @@
             z-index: -2;
         }
 
-        /* אנימציית רקע זהה לאפליקציה */
         .floating-bg-icons { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
         @keyframes float-icon { 0% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-30px) rotate(180deg); } 100% { transform: translateY(0) rotate(360deg); } }
 
@@ -66,9 +72,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .hero-section {
-            margin-bottom: 60px;
-        }
+        .hero-section { margin-bottom: 60px; }
 
         .hero-title {
             font-size: 3.5rem;
@@ -105,78 +109,31 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
-        }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(37, 99, 235, 0.6); }
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.6);
-        }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px); }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
+        .btn-install { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); }
+        .btn-install:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(139, 92, 246, 0.6); }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px);
-        }
-
-        /* רשת פיצ'רים (קריטי ל-SEO - גוגל קורא את זה) */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 60px;
-        }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 60px; }
 
         .feature-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            padding: 30px 20px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--glass-shadow);
-            transition: transform 0.3s ease;
+            background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 30px 20px;
+            border-radius: 20px; backdrop-filter: blur(10px); box-shadow: var(--glass-shadow); transition: transform 0.3s ease;
         }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: var(--accent-blue);
-        }
-
-        .feature-card h3 {
-            font-size: 1.3rem;
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-
-        .feature-card p {
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        .footer {
-            margin-top: 60px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            padding-bottom: 20px;
-        }
+        .feature-card:hover { transform: translateY(-10px); border-color: rgba(59, 130, 246, 0.3); }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 20px; color: var(--accent-blue); }
+        .feature-card h3 { font-size: 1.3rem; margin-top: 0; margin-bottom: 10px; }
+        .feature-card p { color: var(--text-muted); line-height: 1.5; margin: 0; }
+        .footer { margin-top: 60px; color: var(--text-muted); font-size: 0.9rem; padding-bottom: 20px; }
 
         @media (max-width: 768px) {
             .hero-title { font-size: 2.5rem; }
@@ -187,7 +144,6 @@
 </head>
 <body>
 
-<!-- רקע צף להמחשה -->
 <div class="floating-bg-icons" id="bg-icons"></div>
 
 <div class="container">
@@ -196,10 +152,9 @@
         <p class="hero-subtitle">הפלטפורמה המתקדמת ביותר למעקב אחר ההוצאות שלך, תכנון יעדים חכמים והגעה לעצמאות כלכלית. קח שליטה על הכסף שלך עוד היום.</p>
 
         <div class="cta-buttons">
-            <!-- הפניה לעמוד ההתחברות -->
             <a href="/login.html" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> כניסה למערכת</a>
-            <!-- הפניה לעמוד ההרשמה -->
             <a href="/register.html" class="btn btn-secondary"><i class="fas fa-user-plus"></i> צור חשבון חינם</a>
+            <button id="install-app-btn" class="btn btn-install" style="display: none;"><i class="fas fa-download"></i> התקן כאפליקציה</button>
         </div>
     </div>
 
@@ -231,7 +186,6 @@
 </div>
 
 <script>
-    // יצירת אייקונים מרחפים ברקע למראה יוקרתי
     const bgContainer = document.getElementById('bg-icons');
     const icons = ['fa-coins', 'fa-wallet', 'fa-chart-line', 'fa-piggy-bank', 'fa-credit-card'];
     for (let i = 0; i < 15; i++) {
@@ -245,6 +199,48 @@
         icon.style.cssText = `position: absolute; left: ${left}%; top: ${top}%; font-size: ${size}px; color: rgba(255, 255, 255, 0.03); animation: float-icon ${duration}s infinite ease-in-out; animation-delay: -${delay}s;`;
         bgContainer.appendChild(icon);
     }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+        });
+    }
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-app-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) {
+            installBtn.style.display = 'inline-flex';
+        }
+    });
+
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+    }
+
+    window.addEventListener('appinstalled', () => {
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
+    });
 </script>
 </body>
 </html>

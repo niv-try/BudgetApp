@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="/logo-512.png">
+    <link rel="icon" type="image/png" href="/logo-512.png">
+    <link rel="shortcut icon" type="image/png" href="/logo-512.png">
     <title>ניהול תקציב חכם | ניב אגוז</title>
     <meta name="google-site-verification" content="18YJgYCyzeMkPIard5sGBl9Rm404z0ZX7I-kasbQlQ8" />
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -559,7 +564,8 @@
         /* --- המטבע של ניב --- */
         .niv-coin {
             display: inline-block; width: 38px; height: 38px;
-            background-image: url('niv-coin.png'); background-size: 150%; background-repeat: no-repeat;
+            background-image: url('niv-coin.png?v=5'); /* הוספנו פה את הסימן שאלה */
+            background-size: 150%; background-repeat: no-repeat;
             background-position: center; vertical-align: middle; flex-shrink: 0;
             border: none !important; box-shadow: none !important;
         }
@@ -2596,6 +2602,18 @@
 
     function closeQuestsModal() {
         document.getElementById('quests-overlay').classList.remove('show');
+    }
+    // --- רישום PWA Service Worker ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+        });
     }
 </script>
 </body>

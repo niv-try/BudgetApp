@@ -22,21 +22,23 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // התיקון ה-1: פותח גישה חופשית לגוגל ולכולם לעמוד הבית (index) ולמסכי ההתחברות
+                        // 1. אישור לעמודי ה-HTML וה-API הציבוריים
                         .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/api/auth/register").permitAll()
+
+                        // 2. הפתרון: אישור גורף לקבצים סטטיים (JS, JSON, תמונות) ולנתיב השגיאות המובנה של Spring
+                        .requestMatchers("/*.js", "/*.json", "/*.png", "/*.ico", "/error").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login.html")
                         .loginProcessingUrl("/login")
-                        // התיקון ה-2: לאחר התחברות מוצלחת, המשתמש מועבר לאפליקציה (dashboard)
                         .defaultSuccessUrl("/dashboard.html", true)
                         .failureUrl("/login.html?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        // כשמתנתקים, חוזרים לעמוד הבית הראשי והיפה
                         .logoutSuccessUrl("/index.html")
                         .permitAll()
                 );

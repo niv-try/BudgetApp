@@ -28,7 +28,7 @@ public class SecurityConfig {
                         // פתיחת קבצים סטטיים ועמודי אינטרנט כדי שה-PWA יעבוד למשתמשים לא מחוברים
                         .requestMatchers("/", "/*.html", "/*.js", "/*.css", "/*.png", "/*.ico", "/manifest.json").permitAll()
                         // פתיחת נתיבי ההתחברות וההרשמה
-                        .requestMatchers("/api/auth/**", "/api/account/register").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/account/register", "/api/ping", "/error").permitAll()
                         // כל בקשת API אחרת דורשת טוקן תקין!
                         .anyRequest().authenticated()
                 )

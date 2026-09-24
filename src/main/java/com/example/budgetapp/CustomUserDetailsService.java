@@ -17,10 +17,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         AppUser appUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        // רשת ביטחון: אם למשתמש אין תפקיד במסד הנתונים, נגדיר לו תפקיד רגיל
+        String role = appUser.getRole();
+        if (role == null || role.trim().isEmpty()) {
+            role = "ROLE_USER";
+        }
+
         return new org.springframework.security.core.userdetails.User(
                 appUser.getUsername(),
                 appUser.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority(appUser.getRole()))
+                Collections.singletonList(new SimpleGrantedAuthority(role))
         );
     }
 }

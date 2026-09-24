@@ -42,6 +42,34 @@ public class AuthController {
         // 4. מחזירים את הטוקן ללקוח (לדפדפן)
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
+
+    // הזרקת התלויות הדרושות לשמירת משתמש והצפנת סיסמה
+    @Autowired
+    private AppUserRepository appUserRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody AuthRequest authRequest) {
+        // 1. בדיקה האם שם המשתמש כבר תפוס
+        if (appUserRepository.findByUsername(authRequest.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("שם המשתמש כבר קיים במערכת");
+        }
+
+        // 2. יצירת משתמש חדש
+        AppUser newUser = new AppUser();
+        newUser.setUsername(authRequest.getUsername());
+
+        // 3. חובה להצפין את הסיסמה לפני השמירה ב-Neon!
+        newUser.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+
+        // 4. שמירה במסד הנתונים
+        appUserRepository.save(newUser);
+
+        return ResponseEntity.ok("המשתמש נוצר בהצלחה!");
+    }
+
 }
 
 // --- מחלקות עזר פנימיות להעברת הנתונים (DTOs) ---

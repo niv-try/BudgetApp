@@ -1444,7 +1444,7 @@
     const BADGES = [
         { id: 'first-blood', name: 'מכת פתיחה', desc: 'הזנת את הפעולה הראשונה שלך במערכת', icon: 'fa-medal', colorClass: 'first-blood', check: () => transactions.length > 0 },
         { id: 'goal-crusher', name: 'מחסל היעדים', desc: 'סיימת יעד חכם בהצלחה ומשכת את הכסף', icon: 'fa-bullseye', colorClass: 'goal-crusher', check: () => justFinishedGoal },
-        { id: 'the-whale', name: 'הלוויתן', desc: 'הגעת ליתרת עו"ש מכובדת של 10,000', icon: 'fa-crown', colorClass: 'the-whale', check: () => currentBalanceAmount >= 10000 },
+        { id: 'the-whale', name: 'הלוויתן', desc: 'הגעת ליתרת עו"ש מכובדת של 10,000', icon: 'fa-crown', colorClass: 'the-whale', check: () => currentBalanceAmount >= 10000 && transactions.length > 0 },
         { id: 'on-fire', name: 'רצף אש', desc: 'הפקדת לפחות 3 פעמים לחיסכון החכם שלך', icon: 'fa-fire', colorClass: 'on-fire', check: () => transactions.filter(t => t.type === 'savings').length >= 3 },
         { id: 'master-coin', name: 'מאזן מושלם', desc: 'סיימת חודש שבו ההכנסות גבוהות מההוצאות', icon: 'fa-scale-balanced', colorClass: 'master-coin', check: () => checkMasterCoin() }
     ];
@@ -1456,7 +1456,8 @@
         if (cabinet) cabinet.innerHTML = '';
         if (mainContainer) mainContainer.innerHTML = '';
 
-        let unlockedBadgesHistory = JSON.parse(localStorage.getItem('budgetAppUsername') ? localStorage.getItem('budgetAppBadges_' + currentUsername) : '[]') || [];
+        // התיקון הקריטי: לוקחים את הבאדג'ים אך ורק מפרופיל המשתמש המאומת מהשרת, ומתעלמים מהיסטוריה ישנה בדפדפן
+        let unlockedBadgesHistory = profileData.badges || [];
         let newlyUnlocked = false;
 
         BADGES.forEach(badge => {
@@ -1504,7 +1505,10 @@
         });
 
         if (newlyUnlocked) {
-            localStorage.setItem('budgetAppBadges_' + currentUsername, JSON.stringify(unlockedBadgesHistory));
+            // שומרים גם למשתנה המקומי וגם לשרת בסנכרון מלא
+            profileData.badges = unlockedBadgesHistory;
+            saveProfileData();
+
             fetch('/api/account/badges', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
